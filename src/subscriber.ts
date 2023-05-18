@@ -4,7 +4,7 @@ import pino, { Logger, LoggerOptions } from "pino"
 const Parser = require("jsonparse");
 
 export enum Events {
-    Document = "document"
+    PushEvent = "PushEvent"
 }
 
 export class Subscriber<T> extends EventEmitter {
@@ -24,7 +24,7 @@ export class Subscriber<T> extends EventEmitter {
         this.jsonParser.onValue = function(value) {
             // noinspection JSPotentiallyInvalidUsageOfClassThis
             if (this.key == null) {
-                emitter.emit(Events.Document, value)
+                emitter.emit(Events.PushEvent, value)
             }
         }
     }
