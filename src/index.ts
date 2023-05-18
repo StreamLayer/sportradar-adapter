@@ -1,5 +1,5 @@
 import pino, { Logger, LoggerOptions } from "pino"
-import { Subscriber, Events } from "./subscriber"
+import { Subscriber } from "./subscriber"
 
 const log =  pino({
     transport: {
@@ -9,12 +9,13 @@ const log =  pino({
     level: "debug"
 } as LoggerOptions) as Logger
 
-const url = process.env.API_URL
+const url = "https://api.sportradar.com/nba/simulation/stream/en/events/subscribe"
 const key = process.env.API_KEY
 const subscriber = new Subscriber<any>(url, key, log)
 
-subscriber.on(Events.PushEvent, (event) => {
+subscriber.on("event", (event) => {
     log.debug(event, "event emitted")
+    // TODO match event and send to SL services
 })
 
 subscriber.start()
