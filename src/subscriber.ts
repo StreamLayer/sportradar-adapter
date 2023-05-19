@@ -74,6 +74,7 @@ export class Subscriber<T> extends EventEmitter {
     }
 
     async start() {
+        this.looped = true
         while(this.looped) {
             await this.connect()
             if (this.looped)
@@ -83,7 +84,7 @@ export class Subscriber<T> extends EventEmitter {
 
     stop() {
         this.looped = false
-        this.readable.destroy()
+        this.readable?.destroy()
     }
 
     pause() {
