@@ -10,10 +10,13 @@ export class Subscriber<T> extends EventEmitter {
     private looped: boolean = true
     private readable?: Readable
 
-    constructor(
-        private url: string,
-        private key: string,
-        private log: Logger
+    constructor(        
+        private log: Logger,
+        private options: {
+            url: string,
+            key: string,
+            backoffMillis: number,
+        }
     ) {
         super()
         const emitter = this
@@ -28,8 +31,8 @@ export class Subscriber<T> extends EventEmitter {
 
     private async getStreamUrl() {
 
-        const res: AxiosResponse = await axios.get(this.url, {
-            params: { 'api_key': this.key  },
+        const res: AxiosResponse = await axios.get(this.options.url, {
+            params: { 'api_key': this.options.key  },
             maxRedirects: 0,
             validateStatus: function (status: number) {
                 return status >= 200 && status < 303;
@@ -78,7 +81,7 @@ export class Subscriber<T> extends EventEmitter {
         while(this.looped) {
             await this.connect()
             if (this.looped)
-                await this.backoff(1000)
+                await this.backoff(this.options.backoffMillis)
         }
     }
 
