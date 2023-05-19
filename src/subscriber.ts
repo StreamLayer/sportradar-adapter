@@ -15,7 +15,7 @@ export class Subscriber<T> extends EventEmitter {
         private options: {
             url: string,
             key: string,
-            backoffMillis: number,
+            reconnectTimeout: number,
         }
     ) {
         super()
@@ -81,7 +81,7 @@ export class Subscriber<T> extends EventEmitter {
         while(this.looped) {
             await this.connect()
             if (this.looped)
-                await this.backoff(this.options.backoffMillis)
+                await this.backoff(this.options.reconnectTimeout)
         }
     }
 

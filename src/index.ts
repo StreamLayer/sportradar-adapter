@@ -12,7 +12,7 @@ const log =  pino({
 const url = "https://api.sportradar.com/nba/simulation/stream/en/events/subscribe"
 const key = process.env.API_KEY
 const backoffMillis = 1000
-const subscriber = new Subscriber<any>(log, { backoffMillis, url, key })
+const subscriber = new Subscriber<any>(log, { reconnectTimeout: backoffMillis, url, key })
 
 subscriber.on("event", (event) => {
     log.debug(event, "event emitted")
