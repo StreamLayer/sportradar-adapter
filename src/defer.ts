@@ -1,13 +1,13 @@
 
 
+export class Defer<T> {
 
-export class Defer<T> extends Promise<T> {
-    
-    public resolve: Function
-    public reject: Function
+    public promise: Promise<T>
+    public resolve: (value?: T | PromiseLike<T>) => void
+    public reject: (reason?: any) => void
 
     constructor() {
-        super((resolve, reject) => {
+        this.promise = new Promise<T>((resolve, reject) => {
             this.resolve = resolve
             this.reject = reject
         })
