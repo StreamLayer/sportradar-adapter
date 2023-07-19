@@ -39,8 +39,12 @@ export class TriggerService {
     }
 
     async submit(pushData: PushData) {
-        const adapterEvent = this.createEvent(pushData)
-        this.queue.push(adapterEvent, (err) => {})
+
+        const gameLevel = this.createGameLevelEvent(pushData)
+        if ( gameLevel ) {
+            this.queue.push(gameLevel, (err) => {})
+        }
+
     }
 
     private async send(event: AdapterEvent)  {
@@ -64,7 +68,7 @@ export class TriggerService {
             throw new Error("Http error while pushing event into sl-triggers")
     }
 
-    private createEvent(data: PushData) : AdapterEvent {
+    private createGameLevelEvent(data: PushData) : AdapterEvent {
         const { payload } = data
         const { game, event } = payload
 
@@ -94,7 +98,5 @@ export class TriggerService {
 
         return output
     }
-
-
 
 }
