@@ -32,7 +32,10 @@ export class TriggerService {
                 this.send(event)
                     .then(() => done())
                     .catch(err => done(err))
-            }, function(err, result) {
+            }, (err, result) => {
+                if (err) {
+                    this.log.fatal({ err }, `retry failed`)
+                }
                 next(err)
             });
         }, 1)
@@ -48,8 +51,6 @@ export class TriggerService {
     }
 
     private async send(event: AdapterEvent)  {
-
-        // We convert the data and the API key into strings to generate the digest.
         const dataString = JSON.stringify(event)
         const digest = crypto.createHmac(this.options.digestAlgorithm, this.options.digestApiKey)
             .update(dataString)
@@ -69,6 +70,45 @@ export class TriggerService {
     }
 
     private createGameLevelEvent(data: PushData) : AdapterEvent {
+        const { game, event } = data.payload
+        const dt = new Date(event.wall_clock)
+
+        const options = {
+            [BasketballEvents.GamePointsHome]: event.home_points.toString(),
+            [BasketballEvents.GamePointsAway]: event.away_points.toString(),
+            [BasketballEvents.Quarter]: event.period.number.toString()
+        }
+
+        if (game.status == GameStatus.InProgress
+            && event.period.number == 1
+            && event.event_type == EventType.OpenTip) {
+            options[BasketballEvents.GameLevel] = GameLevel.Start
+        }
+        else if (game.status == GameStatus.Complete
+            || game.status == GameStatus.Cancelled
+            || game.status == GameStatus.Closed ) {
+            options[BasketballEvents.GameLevel] = GameLevel.End
+        }
+        else if (game.status == GameStatus.HalfTime) {
+            options[BasketballEvents.GameLevel] = GameLevel.HalfStart
+        }
+        else if (game.status == GameStatus.Cancelled) {
+            options[BasketballEvents.GameLevel] = GameLevel.HalfStart
+        }
+
+        const output: AdapterEvent = {
+            id: event.id,
+            datasource: "sportradar",
+            scope: "game",
+            scopeId: game.id,
+            timestamp: dt.getTime(),
+            options
+        }
+
+        return output
+    }
+
+    private createTeamLevelEvent(data: PushData) : AdapterEvent {
         const { payload } = data
         const { game, event } = payload
 
@@ -84,8 +124,17 @@ export class TriggerService {
             && event.event_type == EventType.OpenTip) {
             options[BasketballEvents.GameLevel] = GameLevel.Start
         }
-
-        options[BasketballEvents.GameLevel] = GameLevel.Start
+        else if (game.status == GameStatus.Complete
+            || game.status == GameStatus.Cancelled
+            || game.status == GameStatus.Closed ) {
+            options[BasketballEvents.GameLevel] = GameLevel.End
+        }
+        else if (game.status == GameStatus.HalfTime) {
+            options[BasketballEvents.GameLevel] = GameLevel.HalfStart
+        }
+        else if (game.status == GameStatus.Cancelled) {
+            options[BasketballEvents.GameLevel] = GameLevel.HalfStart
+        }
 
         const output: AdapterEvent = {
             id: event.id,
