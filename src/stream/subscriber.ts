@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { EventEmitter, Readable } from 'stream';
 import { Logger } from "pino"
-import { Defer } from './defer';
+import { Defer } from '../util/defer';
 
 const Parser = require("jsonparse");
 
@@ -14,8 +14,8 @@ export class Subscriber<T> extends EventEmitter {
     constructor(
         private log: Logger,
         private options: {
-            url: string,
-            key: string,
+            apiUrl: string,
+            apiKey: string,
             reconnectTimeout: number,
         }
     ) {
@@ -32,8 +32,8 @@ export class Subscriber<T> extends EventEmitter {
 
     private async getStreamUrl() {
 
-        const res: AxiosResponse = await axios.get(this.options.url, {
-            params: { 'api_key': this.options.key },
+        const res: AxiosResponse = await axios.get(this.options.apiUrl, {
+            params: { 'api_key': this.options.apiKey },
             maxRedirects: 0,
             validateStatus: function (status: number) {
                 return status >= 200 && status < 303;
@@ -50,7 +50,6 @@ export class Subscriber<T> extends EventEmitter {
     private async connect() {
 
         const deferred = new Defer()
-
         const streamUrl = await this.getStreamUrl()
 
         this.log.debug({ streamUrl }, "connecting...")

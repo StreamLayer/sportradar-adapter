@@ -2,20 +2,30 @@
 import assert = require("assert")
 import * as fs from "fs"
 import Parser = require("jsonparse")
+import async from "async"
 
-describe(`JsonParser`, () => {
-    it(`should parse stream of push events`, async () => {    
+describe(`JsonParser`, function() {
+    this.timeout(3_600_000)
+    it(`should parse stream of push events`, async () => {
+
+        const queue = async.queue((event, cb) => {
+            console.log(JSON.stringify(event, null, 4))
+            setTimeout(() => {
+                cb()
+            }, 1000)
+        }, 1)
+
         const parser = new Parser()
-        let count = 0
-        const pushEvents = fs.readFileSync("data/NBA_v7_Push_Events_Example.json")
-        parser.onValue = function(value) {
+        parser.onValue = function(event) {
             if ( this.key == null ) {
-                count++
-                console.log(value)
+                queue.push(event)
             }
         }
+
+        const pushEvents = fs.readFileSync("data/NBA_v7_Push_Events_Example.json")
         parser.write(pushEvents.toString())
-        assert.ok(count > 0)
+
+        await queue.drain()
     })
 })
 

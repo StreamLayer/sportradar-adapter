@@ -1,7 +1,11 @@
 import pino, { Logger, LoggerOptions } from "pino"
-import { Subscriber } from "./subscriber"
+import { Subscriber } from "./stream/subscriber"
+import { PushData } from "./models/sportradar/push-data";
+import { TriggerService } from "./services/trigger.service";
 
-const log =  pino({
+require('dotenv').config()
+
+const log = pino({
     transport: {
         target: 'pino-pretty'
     },
@@ -9,14 +13,27 @@ const log =  pino({
     level: "debug"
 } as LoggerOptions) as Logger
 
-const url = "https://api.sportradar.com/nba/simulation/stream/en/events/subscribe"
-const key = process.env.API_KEY
-const reconnectTimeout = 1000
-const subscriber = new Subscriber<any>(log, { reconnectTimeout, url, key })
+const subscriber = new Subscriber<any>(log, {
+    reconnectTimeout: 1000,
+    apiUrl: process.env.PROVIDER_API_URL,
+    apiKey: process.env.PROVIDER_API_KEY
+})
 
-subscriber.on("event", (event) => {
-    log.debug(event, "event emitted")
-    // TODO match event and send to SL services
+const triggerService = new TriggerService(log, {
+    times: 10,
+    interval: 200,
+    url: process.env.TRIGGER_API_URL,
+    digestApiKey: process.env.TRIGGER_API_KEY,
+    digestAlgorithm: 'sha256',
+    digestHeader: 'X-Custom-Digest'
+})
+
+subscriber.on("event", (data: PushData) => {
+    log.debug(data, "raw event emitted")
+    triggerService.submit(data)
+        .catch((err) => log.fatal(err))
 })
 
 subscriber.start()
+
+
