@@ -4,7 +4,7 @@ import axios, { AxiosResponse } from 'axios';
 import { EventEmitter, Readable } from 'stream';
 import { Logger } from "pino"
 
-import { Defer } from '../util/defer';
+import { Defer } from './defer';
 
 const Parser = require("jsonparse");
 

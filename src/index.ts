@@ -2,7 +2,7 @@ import pino, { Logger, LoggerOptions } from "pino"
 
 import { PushData } from "./models/sportradar/basketball/push-data";
 
-import { Subscriber } from "./services/subscriber"
+import { Subscriber } from "./stream/subscriber"
 import { BasketballService } from "./services/basketball.service";
 import { TransferQueue } from "./services/transfer.queue";
 import * as fs from "fs";
@@ -39,7 +39,7 @@ const date = new Date()
 const timestamp = date.toISOString().replace(/:/g, "-");
 // Create the filename using the timestamp.
 const filename = `stream_${timestamp}.txt`;
-const filePath = path.join(__dirname, `../streams/${filename}`);
+const filePath = path.join(__dirname, `../dumps/${filename}`);
 
 basketballSubscriber.on("data", (data: PushData) => {
     log.debug(data, "raw data received")
