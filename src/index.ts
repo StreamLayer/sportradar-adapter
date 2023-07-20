@@ -28,7 +28,7 @@ const transferQueue = new TransferQueue(log, {
 })
 
 
-const subscribers = {
+const streams = {
     basketball: new Subscriber(log, {
         reconnectTimeout: 1000,
         apiUrl: process.env.PROVIDER_API_URL,
@@ -47,7 +47,7 @@ const timestamp = date.toISOString().replace(/:/g, "-");
 const filename = `stream_${timestamp}.txt`;
 const filePath = path.join(__dirname, `../dumps/${filename}`);
 
-subscribers.basketball
+streams.basketball
     .on("data", (data: PushData) => {
         log.debug(data, "raw data received")
         fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
