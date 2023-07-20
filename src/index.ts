@@ -27,7 +27,6 @@ const transferQueue = new TransferQueue(log, {
     digestHeader: 'X-Custom-Digest'
 })
 
-
 const streams = {
     basketball: new Subscriber(log, {
         reconnectTimeout: 1000,
