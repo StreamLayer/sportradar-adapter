@@ -25,6 +25,9 @@ export class Subscriber extends EventEmitter {
         super()
         const emitter = this
         this.jsonParser = new Parser()
+        this.jsonParser.onError = (err: Error) => {
+            this.log.error(err, 'error occurred while JSON stream parsing')
+        }
         this.jsonParser.onValue = function (value) {
             // noinspection JSPotentiallyInvalidUsageOfClassThis
             if (this.key == null) {
