@@ -2,7 +2,7 @@ import async, { QueueObject } from "async";
 import { AdapterEvent } from "../models/triggers/adapter-event";
 import { Logger } from "pino";
 import crypto from "crypto";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export interface Options {
     times: number
@@ -23,7 +23,18 @@ export class TransferQueue {
     ) {
         this.queue = async.queue((event: AdapterEvent, next) => {
             this.log.debug(event, "submitting adapter event")
-            async.retry({ ...options }, (done) => {
+            async.retry({
+                ...options,
+                errorFilter: function(err: AxiosError) {
+                    if (err.isAxiosError) {
+                        // do not retry in case authentication failure
+                        if ( err.status == 401 ) {
+                            return false
+                        }
+                    }
+                    return true
+                }
+            }, (done) => {
                 this.send(event)
                     .then(() => done())
                     .catch(err => done(err))
