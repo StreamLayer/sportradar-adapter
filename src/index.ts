@@ -40,9 +40,9 @@ const services = {
 }
 
 const date = new Date()
-// Generate a timestamp string from the date.
+
+// dump stream while learning
 const timestamp = date.toISOString().replace(/:/g, "-");
-// Create the filename using the timestamp.
 const filename = `stream_${timestamp}.txt`;
 const filePath = path.join(__dirname, `../dumps/${filename}`);
 
