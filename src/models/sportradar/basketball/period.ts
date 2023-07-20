@@ -1,6 +1,7 @@
 
 export enum PeriodType {
-    Quarter = "quarter"
+    Quarter = "quarter",
+    Overtime = "overtime"
 }
 
 export interface Period {

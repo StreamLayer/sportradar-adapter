@@ -1,5 +1,4 @@
 
-import assert = require("assert")
 import * as fs from "fs"
 import Parser = require("jsonparse")
 import async from "async"

@@ -8,6 +8,7 @@ export interface Payload {
 }
 
 export interface PushData {
+    heartbeat: any,
     payload: Payload,
     locale: string,
     metadata: Metadata

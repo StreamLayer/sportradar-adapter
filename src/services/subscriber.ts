@@ -1,11 +1,14 @@
+// noinspection JSUnusedGlobalSymbols
+
 import axios, { AxiosResponse } from 'axios';
 import { EventEmitter, Readable } from 'stream';
 import { Logger } from "pino"
+
 import { Defer } from '../util/defer';
 
 const Parser = require("jsonparse");
 
-export class Subscriber<T> extends EventEmitter {
+export class Subscriber extends EventEmitter {
 
     private jsonParser
     private looped: boolean = true
@@ -25,7 +28,11 @@ export class Subscriber<T> extends EventEmitter {
         this.jsonParser.onValue = function (value) {
             // noinspection JSPotentiallyInvalidUsageOfClassThis
             if (this.key == null) {
-                emitter.emit("event", value)
+                try {
+                    emitter.emit("data", value)
+                } catch (err){
+                    emitter.emit("error", err)
+                }
             }
         }
     }
@@ -75,7 +82,11 @@ export class Subscriber<T> extends EventEmitter {
     async start() {
         this.looped = true
         while (this.looped) {
-            await this.connect()
+            try {
+                await this.connect()
+            } catch (err) {
+                this.log.fatal(err)
+            }
             if (this.looped)
                 await this.backoff(this.options.reconnectTimeout)
         }
