@@ -4,10 +4,11 @@
 //  3FG = "3-point Field Goal."
 
 export enum BasketballEvents {
-  GameLevel= 'basketball.game.level',
-  Quarter= 'basketball.game.quarter',
-  GamePointsHome = 'basketball.game.points.home',
-  GamePointsAway = 'basketball.game.points.away',
+  GameLevel= 'basketball.game.level', // game level state (see GameStates)
+  Quarter= 'basketball.game.quarter', // number of quarter
+  Sequence= 'basketball.game.sequence', // number of sequence
+  GamePointsHome = 'basketball.game.points.home', // game points of home team
+  GamePointsAway = 'basketball.game.points.away', // game points of away team
   Player = 'basketball.player', // refers to player id
   Team = 'basketball.team', // refers to team id
   TeamFirstBasket = 'basketball.team.first_basket', // refers to team id
