@@ -1,7 +1,7 @@
 
 
 // description:
-//  3FG = "3-point Field Goal."
+//  3FG = "three-point field goal"
 
 export enum BasketballEvents {
   GameLevel= 'basketball.game.level', // game level state (see GameStates)
