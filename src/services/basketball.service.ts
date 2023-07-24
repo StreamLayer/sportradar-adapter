@@ -13,6 +13,8 @@ import { Team } from "../models/sportradar/basketball/team";
 
 export class BasketballService {
 
+    private datasource: string = "sportradar"
+
     private scoreEventTypes = [
         EventType.FreeThrowMade,
         EventType.TwoPointMade,
@@ -54,7 +56,7 @@ export class BasketballService {
 
         const defaultEvent: AdapterEvent = {
             id: event.id,
-            datasource: "sportradar",
+            datasource: this.datasource,
             scope: "game",
             scopeId: game.id,
             timestamp: dt.getTime(),
