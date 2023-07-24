@@ -47,7 +47,9 @@ export class BasketballService {
         const options = {
             [BasketballEvents.GamePointsHome]: event.home_points.toString(),
             [BasketballEvents.GamePointsAway]: event.away_points.toString(),
-            [BasketballEvents.Quarter]: event.period.number.toString()
+            [BasketballEvents.Sequence]: event.period.sequence.toString(),
+            [BasketballEvents.Quarter]: event.period.number.toString(),
+            [BasketballEvents.Period]: event.period.id.toString(),
         }
 
         const defaultEvent: AdapterEvent = {
