@@ -10,6 +10,7 @@ export enum BasketballEvents {
   GamePointsAway = 'basketball.game.points.away',
   Player = 'basketball.player', // refers to player id
   Team = 'basketball.team', // refers to team id
+  TeamFirstBasket = 'basketball.team.first_basket', // refers to team id
   TeamDunk = 'basketball.team.dunk', // refers to team id
   Team3FG = 'basketball.team.3fg', // refers to team id
   TeamScores3FG = 'basketball.team.scores.3fg', // refers to team id

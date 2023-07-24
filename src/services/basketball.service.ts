@@ -35,6 +35,7 @@ export class BasketballService {
         result.push(...this.getTeamOrPlayer2FTMadeEvents(data))
         result.push(...this.getTeamTimeoutEvents(data))
         result.push(...this.getTeamWinOrLossEvent(data))
+        result.push(...this.getTeamFirstBasketEvent(data))
 
         return result
     }
@@ -303,7 +304,7 @@ export class BasketballService {
     private getPlayer1FTMadeEvents(data: PushData) {
         const { event } = data.payload
         const result = []
-        if (event.event_type == EventType.FreeThrowMade && event.qualifiers.includes(Qualifier.OneFreeThrow) ) {
+        if (event.event_type == EventType.FreeThrowMade && event.qualifiers?.includes(Qualifier.OneFreeThrow) ) {
             // getting a person who was made "freethrow"
             const [ stat ] = _.filter(event.statistics ?? [],
                 (stat: Statistics) => stat.type == StatType.FreeThrow)
@@ -423,4 +424,41 @@ export class BasketballService {
 
         return result
     }
+
+    getTeamFirstBasketEvent(data: PushData) {
+        const { game } = data.payload
+        const result = []
+
+        if ( game.home && game.away ) {
+
+            if ( game.away.points == 0 && game.home.points > 0 ){
+                const event = this.getDefaultEvent(data)
+                const extraOptions = {}
+                extraOptions[BasketballEvents.TeamFirstBasket] = game.home.id
+                extraOptions[BasketballEvents.TeamScoresPoints] = game.home.id
+                extraOptions[BasketballEvents.GamePointsHome] = game.home.points
+                event.options = {
+                    ...event.options,
+                    ...extraOptions
+                }
+                result.push(event)
+            }
+            else if ( game.away.points > 0 && game.home.points == 0 ){
+                const event = this.getDefaultEvent(data)
+                const extraOptions = {}
+                extraOptions[BasketballEvents.TeamFirstBasket] = game.away.id
+                extraOptions[BasketballEvents.TeamScoresPoints] = game.away.id
+                extraOptions[BasketballEvents.GamePointsAway] = game.away.points
+                event.options = {
+                    ...event.options,
+                    ...extraOptions
+                }
+                result.push(event)
+            }
+
+        }
+
+        return result
+    }
+
 }

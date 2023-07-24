@@ -52,7 +52,8 @@ streams.basketball
         fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.basketball.createEvents(data)
-            transferQueue.push(events)
+            log.debug({ events }, 'standard events generated')
+            // transferQueue.push(events)
         }
     })
     .on("error", (err) => {
