@@ -53,7 +53,7 @@ streams.basketball
         if (!data.heartbeat) {
             const events = services.basketball.createEvents(data)
             log.debug({ events }, 'standard events generated')
-            // transferQueue.push(events)
+            transferQueue.push(events)
         }
     })
     .on("error", (err) => {
