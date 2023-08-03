@@ -196,7 +196,7 @@ export class BasketballService {
      * @description successful field goal events (made) which result in a change of the score
      */
     private getTeamOrPlayerScoresPointsOptions(data: PushData) : Record<string, string>[] {
-        const { event } = data.payload
+        const { game, event } = data.payload
         const result = []
 
         const stats = event.statistics ?? []
@@ -210,9 +210,16 @@ export class BasketballService {
                             extraOptions[BasketballEvents.PlayerScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Player] = stat.player.id
                         }
+
                         if (stat.team) {
-                            extraOptions[BasketballEvents.TeamScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Team] = stat.team.id
+                            if (game.away.id == stat.team.id) {
+                                extraOptions[BasketballEvents.GamePointsAway] = game.away.points
+                                extraOptions[BasketballEvents.TeamScoresPoints] = game.away.points
+                            } else {
+                                extraOptions[BasketballEvents.GamePointsHome] = game.home.points
+                                extraOptions[BasketballEvents.TeamScoresPoints] = game.home.points
+                            }
                         }
 
                         result.push(extraOptions)
