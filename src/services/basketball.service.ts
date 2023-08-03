@@ -47,16 +47,17 @@ export class BasketballService {
         const dt = new Date(event.wall_clock)
 
         const options = {
-            [BasketballEvents.GamePointsHome]: event.home_points.toString(),
-            [BasketballEvents.GamePointsAway]: event.away_points.toString(),
-            [BasketballEvents.Sequence]: event.period.sequence.toString(),
-            [BasketballEvents.Quarter]: event.period.number.toString(),
+            [BasketballEvents.GamePointsHome]: game?.home?.points ?? event?.home_points,
+            [BasketballEvents.GamePointsAway]: game?.away?.points ?? event?.away_points,
+            [BasketballEvents.Sequence]: event.period.sequence,
+            [BasketballEvents.Quarter]: event.period.number,
             [BasketballEvents.Period]: event.period.id.toString(),
         }
 
         const defaultEvent: AdapterEvent = {
             id: event.id,
             datasource: this.datasource,
+            sport: "basketball",
             scope: "game",
             scopeId: game.id,
             timestamp: dt.getTime(),
@@ -94,6 +95,9 @@ export class BasketballService {
         else if (game.status == GameStatus.HalfTime) {
             options[BasketballEvents.GameLevel] = GameLevel.HalfStart
         }
+
+        // total game points
+        options[BasketballEvents.TotalPoints] = game.away.points + game.home.points
 
         if ( Object.keys(options).length > 0 ) {
             const event = this.getDefaultEvent(data)
@@ -231,11 +235,11 @@ export class BasketballService {
                         const event = this.getDefaultEvent(data)
                         const extraOptions = {}
                         if ( stat.player ){
-                            extraOptions[BasketballEvents.PlayerScoresPoints] = stat.player.id
+                            extraOptions[BasketballEvents.PlayerScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Player] = stat.player.id
                         }
                         if ( stat.team ){
-                            extraOptions[BasketballEvents.TeamScoresPoints] = stat.team.id
+                            extraOptions[BasketballEvents.TeamScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Team] = stat.team.id
                         }
                         event.options = {
@@ -439,7 +443,7 @@ export class BasketballService {
                 const event = this.getDefaultEvent(data)
                 const extraOptions = {}
                 extraOptions[BasketballEvents.TeamFirstBasket] = game.home.id
-                extraOptions[BasketballEvents.TeamScoresPoints] = game.home.id
+                extraOptions[BasketballEvents.TeamScoresPoints] = game.home.points
                 extraOptions[BasketballEvents.GamePointsHome] = game.home.points
                 event.options = {
                     ...event.options,
@@ -451,7 +455,7 @@ export class BasketballService {
                 const event = this.getDefaultEvent(data)
                 const extraOptions = {}
                 extraOptions[BasketballEvents.TeamFirstBasket] = game.away.id
-                extraOptions[BasketballEvents.TeamScoresPoints] = game.away.id
+                extraOptions[BasketballEvents.TeamScoresPoints] = game.away.points
                 extraOptions[BasketballEvents.GamePointsAway] = game.away.points
                 event.options = {
                     ...event.options,

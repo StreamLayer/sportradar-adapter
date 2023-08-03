@@ -10,6 +10,8 @@ export interface AdapterEvent {
   scopeId: string
   // event timestamp
   timestamp: number
+  // type of sport
+  sport: string
   // event name -> event value
-  options: Record<string, string>
+  options: Record<string, string | number>
 }
