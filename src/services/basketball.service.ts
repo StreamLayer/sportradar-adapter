@@ -199,9 +199,7 @@ export class BasketballService {
         const { event } = data.payload
         const result = []
 
-        const stats = _.filter(event.statistics ?? [],
-            (stat: Statistics) => stat.type == StatType.Fieldgoal)
-
+        const stats = event.statistics ?? []
         if (stats.length > 0) {
             for (const stat of stats) {
                 if ( stat.points ) {
