@@ -57,6 +57,8 @@ export interface Statistics {
   shot_type: ShotType
   shot_type_desc: "driving" | string
   shot_distance: number
+  // TODO find out what does these points refer to?
+  //  Is it points for event or a total sum over the game?
   points: number
   team: Pick<Team, "name" | "market" | "reference" | "id">
   player: Pick<Player, "full_name" | "jersey_number" | "reference" | "id">

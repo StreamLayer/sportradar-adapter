@@ -27,10 +27,13 @@ export enum EventType {
 
     // - <charged_to> flagrant 1 (<drawn_by> draws the foul)
     FlagrantOne = "flagrantone",
+
     // - <charged_to> flagrant 2 (<drawn_by> draws the foul)
     FlagrantTwo = "flagranttwo",
+
     // - <taken_by> makes <free_throw_type> free throw <attempt>
     FreeThrowMade = "freethrowmade",
+
     //  - <taken_by> misses <free_throw_type> free throw <attempt> (<charged_to> lane_violation)
     FreeThrowMiss = "freethrowmiss",
 
