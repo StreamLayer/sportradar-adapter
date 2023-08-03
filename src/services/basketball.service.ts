@@ -14,35 +14,37 @@ import { Team } from "../models/sportradar/basketball/team";
 export class BasketballService {
 
     private datasource: string = "sportradar"
+    private sport: string = "basketball"
+    private scope: string = "game"
 
-    private scoreEventTypes = [
-        EventType.FreeThrowMade,
-        EventType.TwoPointMade,
-        EventType.ThreePointMade,
-    ]
-
-    constructor() {}
-
-    createEvents(data: PushData) : AdapterEvent[] {
-
-        const result:AdapterEvent[] = []
-
-        result.push(...this.getGameLevelEvents(data))
-        result.push(...this.getTeamOrPlayerDunkEvents(data))
-        result.push(...this.getTeamOrPlayer3FGScoreEvents(data))
-        result.push(...this.getTeamOrPlayer3FGEvents(data))
-        result.push(...this.getTeamOrPlayerScoresPointsEvents(data))
-        result.push(...this.getTeamOrPlayerShootingFoulEvents(data))
-        result.push(...this.getPlayer1FTMadeEvents(data))
-        result.push(...this.getTeamOrPlayer2FTMadeEvents(data))
-        result.push(...this.getTeamTimeoutEvents(data))
-        result.push(...this.getTeamWinOrLossEvent(data))
-        result.push(...this.getTeamFirstBasketEvent(data))
-
-        return result
+    constructor() {
     }
 
-    private getDefaultEvent(data: PushData) {
+    createEvents(data: PushData): AdapterEvent[] {
+
+        const options: Record<string, string>[] = []
+
+        options.push(...this.getGameLevelOptions(data))
+        options.push(...this.getTeamOrPlayerDunkOptions(data))
+        options.push(...this.getTeamOrPlayer3FGScoreOptions(data))
+        options.push(...this.getTeamOrPlayer3FGOptions(data))
+        options.push(...this.getTeamOrPlayerScoresPointsOptions(data))
+        options.push(...this.getTeamOrPlayerShootingFoulOptions(data))
+        options.push(...this.getPlayer1FTMadeOptions(data))
+        options.push(...this.getTeamOrPlayer2FTMadeOptions(data))
+        options.push(...this.getTeamTimeoutOptions(data))
+        options.push(...this.getTeamWinOrLossOptions(data))
+        options.push(...this.getTeamFirstBasketOptions(data))
+
+        const event = this.getDefaultEvent(data)
+        for(const extras of options) {
+            _.merge(event.options, extras)
+        }
+
+        return [ event ]
+    }
+
+    private getDefaultEvent(data: PushData) : AdapterEvent {
         const { game, event } = data.payload
         const dt = new Date(event.wall_clock)
 
@@ -57,8 +59,8 @@ export class BasketballService {
         const defaultEvent: AdapterEvent = {
             id: event.id,
             datasource: this.datasource,
-            sport: "basketball",
-            scope: "game",
+            sport: this.sport,
+            scope: this.scope,
             scopeId: game.id,
             timestamp: dt.getTime(),
             options
@@ -67,83 +69,62 @@ export class BasketballService {
         return defaultEvent
     }
 
-    private getGameLevelEvents(data: PushData) : AdapterEvent[]
-    {
+    private getGameLevelOptions(data: PushData): Record<string, string>[] {
         const { game, event } = data.payload
 
-        const options = {}
+        const extraOptions = {}
 
         if (game.status == GameStatus.InProgress
             && event.period.number == 1
             && event.event_type == EventType.OpenTip) {
-            options[BasketballEvents.GameLevel] = GameLevel.Start
-        }
-        else if (game.status == GameStatus.InProgress
+            extraOptions[BasketballEvents.GameLevel] = GameLevel.Start
+        } else if (game.status == GameStatus.InProgress
             && event.event_type == EventType.EndPeriod) {
-            options[BasketballEvents.GameLevel] = GameLevel.QuarterEnd
-        }
-        else if (game.status == GameStatus.Complete
+            extraOptions[BasketballEvents.GameLevel] = GameLevel.QuarterEnd
+        } else if (game.status == GameStatus.Complete
             || game.status == GameStatus.Cancelled
-            || game.status == GameStatus.Closed ) {
-            options[BasketballEvents.GameLevel] = GameLevel.End
+            || game.status == GameStatus.Closed) {
+            extraOptions[BasketballEvents.GameLevel] = GameLevel.End
         }
         // TODO check validity of the approach
         else if (game.status == GameStatus.InProgress
             && event.event_type == EventType.OpenTip) {
-            options[BasketballEvents.GameLevel] = GameLevel.HalfStart
-        }
-        else if (game.status == GameStatus.HalfTime) {
-            options[BasketballEvents.GameLevel] = GameLevel.HalfStart
+            extraOptions[BasketballEvents.GameLevel] = GameLevel.HalfStart
+        } else if (game.status == GameStatus.HalfTime) {
+            extraOptions[BasketballEvents.GameLevel] = GameLevel.HalfStart
         }
 
         // total game points
-        options[BasketballEvents.TotalPoints] = game.away.points + game.home.points
+        extraOptions[BasketballEvents.TotalPoints] = game.away.points + game.home.points
 
-        if ( Object.keys(options).length > 0 ) {
-            const event = this.getDefaultEvent(data)
-            event.options = {
-                ...event.options,
-                ...options
-            }
-            return [ event ]
+        if (Object.keys(extraOptions).length > 0) {
+            return [extraOptions]
         } else {
             return []
         }
     }
 
-    private isScoreEvent(event: Event) {
-        return this.scoreEventTypes.includes(event.event_type)
-    }
-
-    private getTeamOrPlayerDunkEvents(data: PushData) {
+    private getTeamOrPlayerDunkOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         const dunks = _.filter(event.statistics ?? [],
             (stat: Statistics) => stat.shot_type == ShotType.Dunk)
-        if ( dunks.length > 0 ) {
-            for(const stat of dunks ){
-                if ( stat.player || stat.team ) {
-                    const event = this.getDefaultEvent(data)
+        if (dunks.length > 0) {
+            for (const stat of dunks) {
+                if (stat.player || stat.team) {
                     const extraOptions = {}
 
-                    if ( stat.player ) {
+                    if (stat.player) {
                         extraOptions[BasketballEvents.Player] = stat.player.id
                         extraOptions[BasketballEvents.PlayerDunk] = stat.player.id
-                        extraOptions[BasketballEvents.PlayerScoresPoints] = stat.points
                     }
 
-                    if ( stat.team ) {
+                    if (stat.team) {
                         extraOptions[BasketballEvents.Team] = stat.team.id
                         extraOptions[BasketballEvents.TeamDunk] = stat.team.id
-                        extraOptions[BasketballEvents.TeamScoresPoints] = stat.points
                     }
 
-                    event.options = {
-                        ...event.options,
-                        ...extraOptions
-                    }
-
-                    result.push(event)
+                    result.push(extraOptions)
                 }
             }
         }
@@ -153,35 +134,27 @@ export class BasketballService {
     /**
      * @description only successful three-point field goal events (made) which change the score
      */
-    private getTeamOrPlayer3FGScoreEvents(data: PushData) {
+    private getTeamOrPlayer3FGScoreOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.ThreePointMade) {
             const stats = _.filter(event.statistics ?? [],
                 (stat: Statistics) => stat.type == StatType.Fieldgoal)
-            if ( stats.length > 0 ) {
-                for(const stat of stats ){
-                    if ( stat.player || stat.team ) {
-                        const event = this.getDefaultEvent(data)
+            if (stats.length > 0) {
+                for (const stat of stats) {
+                    if (stat.player || stat.team) {
                         const extraOptions = {}
-                        if ( stat.player ){
+                        if (stat.player) {
                             extraOptions[BasketballEvents.Player3FG] = stat.player.id
                             extraOptions[BasketballEvents.PlayerScoresX3FG] = stat.player.id
-                            extraOptions[BasketballEvents.PlayerScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Player] = stat.player.id
                         }
-                        if ( stat.team ){
+                        if (stat.team) {
                             extraOptions[BasketballEvents.Team3FG] = stat.team.id
                             extraOptions[BasketballEvents.TeamScores3FG] = stat.team.id
-                            extraOptions[BasketballEvents.TeamScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Team] = stat.team.id
                         }
-
-                        event.options = {
-                            ...event.options,
-                            ...extraOptions
-                        }
-                        result.push(event)
+                        result.push(extraOptions)
                     }
                 }
             }
@@ -192,31 +165,26 @@ export class BasketballService {
     /**
      * @description any three-point field goal event regardless of the result (made or missed)
      */
-    private getTeamOrPlayer3FGEvents(data: PushData) {
+    private getTeamOrPlayer3FGOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.ThreePointMade
             || event.event_type == EventType.ThreePointMiss) {
             const stats = _.filter(event.statistics ?? [],
                 (stat: Statistics) => stat.type == StatType.Fieldgoal)
-            if ( stats.length > 0 ) {
-                for(const stat of stats ){
-                    if ( stat.player || stat.team ) {
-                        const event = this.getDefaultEvent(data)
+            if (stats.length > 0) {
+                for (const stat of stats) {
+                    if (stat.player || stat.team) {
                         const extraOptions = {}
-                        if ( stat.player ){
+                        if (stat.player) {
                             extraOptions[BasketballEvents.Player3FG] = stat.player.id
                             extraOptions[BasketballEvents.Player] = stat.player.id
                         }
-                        if ( stat.team ){
+                        if (stat.team) {
                             extraOptions[BasketballEvents.Team3FG] = stat.team.id
                             extraOptions[BasketballEvents.Team] = stat.team.id
                         }
-                        event.options = {
-                            ...event.options,
-                            ...extraOptions
-                        }
-                        result.push(event)
+                        result.push(extraOptions)
                     }
                 }
             }
@@ -227,34 +195,34 @@ export class BasketballService {
     /**
      * @description successful field goal events (made) which result in a change of the score
      */
-    private getTeamOrPlayerScoresPointsEvents(data: PushData) {
+    private getTeamOrPlayerScoresPointsOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
-        if (this.isScoreEvent(event)) {
-            const stats = _.filter(event.statistics ?? [],
-                (stat: Statistics) => stat.type == StatType.Fieldgoal)
-            if ( stats.length > 0 ) {
-                for(const stat of stats ){
-                    if ( stat.player || stat.team ) {
-                        const event = this.getDefaultEvent(data)
+
+        const stats = _.filter(event.statistics ?? [],
+            (stat: Statistics) => stat.type == StatType.Fieldgoal)
+
+        if (stats.length > 0) {
+            for (const stat of stats) {
+                if ( stat.points ) {
+                    if (stat.player || stat.team) {
+
                         const extraOptions = {}
-                        if ( stat.player ){
+                        if (stat.player) {
                             extraOptions[BasketballEvents.PlayerScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Player] = stat.player.id
                         }
-                        if ( stat.team ){
+                        if (stat.team) {
                             extraOptions[BasketballEvents.TeamScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Team] = stat.team.id
                         }
-                        event.options = {
-                            ...event.options,
-                            ...extraOptions
-                        }
-                        result.push(event)
+
+                        result.push(extraOptions)
                     }
                 }
             }
         }
+
         return result
     }
 
@@ -281,116 +249,96 @@ export class BasketballService {
      *              as it provides a scoring opportunity for the team that was fouled and can lead
      *              to key players being removed from the game if they accumulate too many fouls.
      *
-     *              (!! (C) Chat GPT-4, might be erroneous)
+     *              TODO verify logic
      */
-    private getTeamOrPlayerShootingFoulEvents(data: PushData) {
+    private getTeamOrPlayerShootingFoulOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
-        if (event.event_type == EventType.ShootingFoul ) {
+        if (event.event_type == EventType.ShootingFoul) {
             // getting a person who was fouled while shooting
-            const [ stat ] = _.filter(event.statistics ?? [],
+            const [stat] = _.filter(event.statistics ?? [],
                 (stat: Statistics) => stat.type == StatType.FoulDrawn)
-            if ( stat ) {
-                if ( stat.player || stat.team ) {
-                    const event = this.getDefaultEvent(data)
+            if (stat) {
+                if (stat.player || stat.team) {
                     const extraOptions = {}
-                    if ( stat.player ){
+                    if (stat.player) {
                         extraOptions[BasketballEvents.PlayerShootingFoul] = stat.player.id
                         extraOptions[BasketballEvents.Player] = stat.player.id
                     }
-                    if ( stat.team ){
+                    if (stat.team) {
                         extraOptions[BasketballEvents.TeamShootingFoul] = stat.team.id
                         extraOptions[BasketballEvents.Team] = stat.team.id
                     }
-                    event.options = {
-                        ...event.options,
-                        ...extraOptions
-                    }
-                    result.push(event)
+                    result.push(extraOptions)
                 }
             }
         }
         return result
     }
 
-    private getPlayer1FTMadeEvents(data: PushData) {
+    private getPlayer1FTMadeOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
-        if (event.event_type == EventType.FreeThrowMade && event.qualifiers?.includes(Qualifier.OneFreeThrow) ) {
+        if (event.event_type == EventType.FreeThrowMade && event.qualifiers?.includes(Qualifier.OneFreeThrow)) {
             // getting a person who was made "freethrow"
-            const [ stat ] = _.filter(event.statistics ?? [],
+            const [stat] = _.filter(event.statistics ?? [],
                 (stat: Statistics) => stat.type == StatType.FreeThrow)
-            if ( stat ) {
-                if ( stat.player ) {
-                    const event = this.getDefaultEvent(data)
+            if (stat) {
+                if (stat.player) {
                     const extraOptions = {}
-                    if ( stat.player ){
+                    if (stat.player) {
                         extraOptions[BasketballEvents.Player1FTMade] = stat.player.id
                         extraOptions[BasketballEvents.Player] = stat.player.id
                     }
-                    event.options = {
-                        ...event.options,
-                        ...extraOptions
-                    }
-                    result.push(event)
+                    result.push(extraOptions)
                 }
             }
         }
         return result
     }
 
-    private getTeamOrPlayer2FTMadeEvents(data: PushData) {
+    private getTeamOrPlayer2FTMadeOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
-        if (event.event_type == EventType.FreeThrowMade && event.qualifiers.includes(Qualifier.OneFreeThrow) ) {
+        if (event.event_type == EventType.FreeThrowMade && event.qualifiers.includes(Qualifier.OneFreeThrow)) {
             // getting a person who was made "freethrow"
-            const [ stat ] = _.filter(event.statistics ?? [],
+            const [stat] = _.filter(event.statistics ?? [],
                 (stat: Statistics) => stat.type == StatType.FreeThrow)
-            if ( stat ) {
-                if ( stat.player || stat.team ) {
-                    const event = this.getDefaultEvent(data)
+            if (stat) {
+                if (stat.player || stat.team) {
                     const extraOptions = {}
-                    if ( stat.player ){
+                    if (stat.player) {
                         extraOptions[BasketballEvents.Player2FTMade] = stat.player.id
                         extraOptions[BasketballEvents.Player] = stat.player.id
                     }
-                    if ( stat.team ){
+                    if (stat.team) {
                         extraOptions[BasketballEvents.Team2FTMade] = stat.team.id
                         extraOptions[BasketballEvents.Team] = stat.team.id
                     }
-                    event.options = {
-                        ...event.options,
-                        ...extraOptions
-                    }
-                    result.push(event)
+                    result.push(extraOptions)
                 }
             }
         }
         return result
     }
 
-    private getTeamTimeoutEvents(data: PushData) {
+    private getTeamTimeoutOptions(data: PushData) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.TeamTimeout) {
             const team = event.attribution as Team
-            if ( team ) {
-                const event = this.getDefaultEvent(data)
+            if (team) {
                 const extraOptions = {
                     [BasketballEvents.TeamTimeout]: team.id,
                     [BasketballEvents.Team]: team.id
                 }
-                event.options = {
-                    ...event.options,
-                    ...extraOptions
-                }
-                result.push(event)
+                result.push(extraOptions)
             }
         }
         return result
     }
 
-    private getTeamWinOrLossEvent(data: PushData) {
+    private getTeamWinOrLossOptions(data: PushData) : Record<string, string>[] {
         const { game, event } = data.payload
         const result = []
 
@@ -405,69 +353,47 @@ export class BasketballService {
                     points: game.away.points
                 }
             ]
-            const [ lost, won ] = _.sortBy(teams, (team) => team.points)
+            const [lost, won] = _.sortBy(teams, (team) => team.points)
 
-            if ( lost ) {
-                const event = this.getDefaultEvent(data)
+            if (lost) {
                 const extraOptions = {
                     [BasketballEvents.TeamLoss]: lost.id,
                     [BasketballEvents.Team]: lost.id
                 }
-                event.options = {
-                    ...event.options,
-                    ...extraOptions
-                }
-                result.push(event)
+                result.push(extraOptions)
             }
 
-            if ( won ) {
-                const event = this.getDefaultEvent(data)
+            if (won) {
                 const extraOptions = {
                     [BasketballEvents.TeamWin]: won.id,
                     [BasketballEvents.Team]: won.id
                 }
-                event.options = {
-                    ...event.options,
-                    ...extraOptions
-                }
-                result.push(event)
+                result.push(extraOptions)
             }
         }
 
         return result
     }
 
-    getTeamFirstBasketEvent(data: PushData) {
+    getTeamFirstBasketOptions(data: PushData) : Record<string, string>[] {
         const { game } = data.payload
         const result = []
 
-        if ( game.home && game.away ) {
+        if (game.home && game.away) {
 
-            if ( game.away.points == 0 && game.home.points > 0 ){
-                const event = this.getDefaultEvent(data)
+            if (game.away.points == 0 && game.home.points > 0) {
                 const extraOptions = {}
                 extraOptions[BasketballEvents.TeamFirstBasket] = game.home.id
-                extraOptions[BasketballEvents.TeamScoresPoints] = game.home.points
+                extraOptions[BasketballEvents.Team] = game.home.id
                 extraOptions[BasketballEvents.GamePointsHome] = game.home.points
-                event.options = {
-                    ...event.options,
-                    ...extraOptions
-                }
-                result.push(event)
-            }
-            else if ( game.away.points > 0 && game.home.points == 0 ){
-                const event = this.getDefaultEvent(data)
+                result.push(extraOptions)
+            } else if (game.away.points > 0 && game.home.points == 0) {
                 const extraOptions = {}
                 extraOptions[BasketballEvents.TeamFirstBasket] = game.away.id
-                extraOptions[BasketballEvents.TeamScoresPoints] = game.away.points
+                extraOptions[BasketballEvents.Team] = game.away.id
                 extraOptions[BasketballEvents.GamePointsAway] = game.away.points
-                event.options = {
-                    ...event.options,
-                    ...extraOptions
-                }
-                result.push(event)
+                result.push(extraOptions)
             }
-
         }
 
         return result
