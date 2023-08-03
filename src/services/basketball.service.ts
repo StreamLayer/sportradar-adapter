@@ -167,11 +167,13 @@ export class BasketballService {
                         if ( stat.player ){
                             extraOptions[BasketballEvents.Player3FG] = stat.player.id
                             extraOptions[BasketballEvents.PlayerScoresX3FG] = stat.player.id
+                            extraOptions[BasketballEvents.PlayerScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Player] = stat.player.id
                         }
                         if ( stat.team ){
                             extraOptions[BasketballEvents.Team3FG] = stat.team.id
                             extraOptions[BasketballEvents.TeamScores3FG] = stat.team.id
+                            extraOptions[BasketballEvents.TeamScoresPoints] = stat.points
                             extraOptions[BasketballEvents.Team] = stat.team.id
                         }
 
