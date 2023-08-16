@@ -22,6 +22,10 @@ export class BasketballService {
 
     createEvents(data: PushData): AdapterEvent[] {
 
+        if ( data.heartbeat ) {
+            return []
+        }
+
         const options: Record<string, string>[] = []
 
         options.push(...this.getGameLevelOptions(data))
@@ -51,9 +55,11 @@ export class BasketballService {
         const options = {
             [BasketballEvents.GamePointsHome]: game?.home?.points ?? event?.home_points,
             [BasketballEvents.GamePointsAway]: game?.away?.points ?? event?.away_points,
-            [BasketballEvents.Sequence]: event.period.sequence,
-            [BasketballEvents.Quarter]: event.period.number,
-            [BasketballEvents.Period]: event.period.id.toString(),
+            ...( event.period ? {
+                [BasketballEvents.Sequence]: event.period?.sequence,
+                [BasketballEvents.Quarter]: event.period.number,
+                [BasketballEvents.Period]: event.period.id.toString(),
+            } : {}),
         }
 
         const defaultEvent: AdapterEvent = {
@@ -75,7 +81,7 @@ export class BasketballService {
         const extraOptions = {}
 
         if (game.status == GameStatus.InProgress
-            && event.period.number == 1
+            && event.period?.number == 1
             && event.event_type == EventType.OpenTip) {
             extraOptions[BasketballEvents.GameLevel] = GameLevel.Start
         } else if (game.status == GameStatus.InProgress
