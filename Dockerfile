@@ -4,17 +4,15 @@ FROM node:18.17.0-buster as intermediate
 # installation required packages
 RUN apt-get update && apt-get install -y ssh git python python3 build-essential
 
-RUN mkdir -p /src
+RUN mkdir -p /opt/src
 
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "tsconfig.json", "/src/"]
-WORKDIR /src
+COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "tsconfig.json", "/opt/"]
+WORKDIR /opt
 RUN npm install
 # RUN npm install --only=production --force
 
-COPY ./src /src
-
-RUN ls -lhs /src
+COPY ./src /opt/src
 
 # copy just the package form the previous image
 FROM node:18.17.0-buster
-COPY --from=intermediate /src /src
+COPY --from=intermediate /opt /opt
