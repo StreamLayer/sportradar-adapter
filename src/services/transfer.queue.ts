@@ -1,16 +1,15 @@
 import async, { QueueObject } from "async";
 import { AdapterEvent } from "../models/triggers/adapter-event";
 import { Logger } from "pino";
-import crypto from "crypto";
+import crypto, { sign } from "crypto";
 import axios, { AxiosError } from "axios";
 
 export interface Options {
     times: number
     interval: number
     url: string
-    digestAlgorithm: string
-    digestApiKey: string
-    digestHeader: string
+    accessToken: string
+    secret: string
 }
 
 export class TransferQueue {
@@ -54,17 +53,19 @@ export class TransferQueue {
     }
 
     private async send(event: AdapterEvent)  {
-        const dataString = JSON.stringify(event)
-        const digest = crypto.createHmac(this.options.digestAlgorithm, this.options.digestApiKey)
-            .update(dataString)
-            .digest('hex');
+
+        const requestBody = JSON.stringify(event)
+        const signature = crypto.createHmac("sha256", this.options.secret)
+            .update(requestBody)
+            .digest('base64');
 
         const response = await axios({
             method: 'post',
             url: this.options.url,
-            data: dataString,
+            data: requestBody,
             headers: {
-                [this.options.digestHeader]: digest
+                "x-access-token": this.options.accessToken,
+                "x-signature": signature
             }
         })
 

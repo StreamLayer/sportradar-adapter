@@ -22,9 +22,8 @@ const transferQueue = new TransferQueue(log, {
     times: 10,
     interval: 200,
     url: process.env.TRIGGER_API_URL,
-    digestApiKey: process.env.TRIGGER_API_KEY,
-    digestAlgorithm: 'sha256',
-    digestHeader: 'X-Custom-Digest'
+    accessToken: process.env.TRIGGER_ACCESS_TOKEN,
+    secret: process.env.TRIGGER_SECRET
 })
 
 const streams = {
