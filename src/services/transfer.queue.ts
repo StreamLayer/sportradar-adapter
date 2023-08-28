@@ -1,8 +1,8 @@
 import async, { QueueObject } from "async";
 import { AdapterEvent } from "../models/triggers/adapter-event";
 import { Logger } from "pino";
-import crypto, { sign } from "crypto";
 import axios, { AxiosError } from "axios";
+import crypto = require("crypto");
 
 export interface Options {
     times: number
