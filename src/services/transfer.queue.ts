@@ -68,8 +68,9 @@ export class TransferQueue {
             }
         })
 
-        if ( response.status !== 200 )
+        if ( response.status !== 200 ) {
             throw new Error("Http error while pushing event into sl-triggers")
+        }
     }
 
 
