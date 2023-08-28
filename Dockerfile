@@ -13,8 +13,6 @@ RUN npm install
 
 COPY ./src /src
 
-RUN npm run build
-
 # copy just the package form the previous image
 FROM node:18.17.0-buster
 COPY --from=intermediate /src /src
