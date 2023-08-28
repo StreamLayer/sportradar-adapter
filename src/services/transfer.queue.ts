@@ -72,7 +72,7 @@ export class TransferQueue {
             }
         }
 
-        this.log.debug({ config, options: this.options }, 'sending push event')
+        this.log.debug({ config }, 'sending push event')
 
         const response = await axios(config)
 
