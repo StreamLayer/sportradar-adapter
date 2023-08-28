@@ -41,14 +41,14 @@ const services = {
 const date = new Date()
 
 // dump stream while learning
-const timestamp = date.toISOString().replace(/:/g, "-");
-const filename = `stream_${timestamp}.txt`;
-const filePath = path.join(__dirname, `../dumps/${filename}`);
+// const timestamp = date.toISOString().replace(/:/g, "-");
+//const filename = `stream_${timestamp}.txt`;
+// const filePath = path.join(__dirname, `../dumps/${filename}`);
 
 streams.basketball
     .on("data", (data: PushData) => {
         log.debug(data, "raw data received")
-        fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
+        // fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.basketball.createEvents(data)
             log.debug({ events }, 'standard events generated')

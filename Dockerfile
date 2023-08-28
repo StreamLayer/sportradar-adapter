@@ -4,6 +4,7 @@ FROM node:18.17.0-buster
 RUN apt-get update && apt-get install -y ssh git python python3 build-essential
 
 RUN mkdir -p /opt/src
+RUN mkdir -p /opt/dumps
 
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "tsconfig.json", "/opt/"]
 WORKDIR /opt
