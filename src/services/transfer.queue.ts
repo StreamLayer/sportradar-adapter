@@ -72,6 +72,8 @@ export class TransferQueue {
             }
         }
 
+        this.log.debug({ config }, 'sending push event')
+
         const response = await axios(config)
 
         if ( response.status !== 200 ) {
