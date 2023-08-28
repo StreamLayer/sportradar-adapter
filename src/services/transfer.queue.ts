@@ -1,7 +1,7 @@
 import async, { QueueObject } from "async";
 import { AdapterEvent } from "../models/triggers/adapter-event";
 import { Logger } from "pino";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import crypto = require("crypto");
 
 export interface Options {
@@ -52,6 +52,8 @@ export class TransferQueue {
         }
     }
 
+
+
     private async send(event: AdapterEvent)  {
 
         const requestBody = JSON.stringify(event)
@@ -59,15 +61,18 @@ export class TransferQueue {
             .update(requestBody)
             .digest('base64');
 
-        const response = await axios({
+        const config: AxiosRequestConfig = {
             method: 'post',
             url: this.options.url,
             data: requestBody,
             headers: {
                 "x-access-token": this.options.accessToken,
-                "x-signature": signature
+                "x-signature": signature,
+                'content-Type': 'application/json'
             }
-        })
+        }
+
+        const response = await axios(config)
 
         if ( response.status !== 200 ) {
             throw new Error("Http error while pushing event into sl-triggers")
