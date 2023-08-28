@@ -1,5 +1,4 @@
-# this is our first build stage, it will not persist in the final image
-FROM node:18.17.0-buster as intermediate
+FROM node:18.17.0-buster
 
 # installation required packages
 RUN apt-get update && apt-get install -y ssh git python python3 build-essential
@@ -12,7 +11,3 @@ RUN npm install
 # RUN npm install --only=production --force
 
 COPY ./src /opt/src
-
-# copy just the package form the previous image
-FROM node:18.17.0-buster
-COPY --from=intermediate /opt /opt
