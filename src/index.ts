@@ -14,7 +14,7 @@ const log = pino({
     transport: {
         target: 'pino-pretty'
     },
-    name: "nba",
+    name: "sportradar",
     level: "debug"
 } as LoggerOptions) as Logger
 
