@@ -56,7 +56,7 @@ export class TransferQueue {
 
     private async send(event: AdapterEvent)  {
 
-        const requestBody = JSON.stringify(event)
+        const requestBody = JSON.stringify({ event })
         const signature = crypto.createHmac("sha256", this.options.secret)
             .update(requestBody)
             .digest('base64');
