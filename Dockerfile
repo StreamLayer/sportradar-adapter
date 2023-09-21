@@ -1,14 +1,17 @@
-FROM node:18.17.0-buster
+FROM node:18.17.0-alpine
 
-# installation required packages
-RUN apt-get update && apt-get install -y ssh git python python3 build-essential
-
-RUN mkdir -p /opt/src
-RUN mkdir -p /opt/dumps
-
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "tsconfig.json", "/opt/"]
 WORKDIR /opt
-RUN npm install
-# RUN npm install --only=production --force
 
-COPY ./src /opt/src
+RUN apk update --no-cache && \
+    apk add --no-cache git python3 build-base openssh && \
+    mkdir -p /opt/src /opt/dumps && \
+    chown -R node:node /opt
+
+COPY --chown=node:node ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "tsconfig.json", "/opt/"]
+
+USER node
+
+RUN npm install
+
+COPY --chown=node:node ./src /opt/src
+# RUN npm install --only=production --force
