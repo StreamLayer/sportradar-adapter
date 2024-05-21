@@ -50,12 +50,12 @@ const services = {
 }
 
 // dump stream while learning
-// const date = new Date()
-// const timestamp = date.toISOString().replace(/:/g, "-");
-// const filename = `stream_baseball_${timestamp}.txt`;
-// const eventsFilename = `events_baseball_${timestamp}.txt`;
-// const filePath = path.join(__dirname, `../dumps/${filename}`);
-// const eventsFilePath = path.join(__dirname, `../dumps/${eventsFilename}`);
+const date = new Date()
+const timestamp = date.toISOString().replace(/:/g, "-");
+const filename = `stream_baseball_${timestamp}.txt`;
+const eventsFilename = `events_baseball_${timestamp}.txt`;
+const filePath = path.join(__dirname, `../dumps/${filename}`);
+const eventsFilePath = path.join(__dirname, `../dumps/${eventsFilename}`);
 
 streams.basketball
     .on("data", (data: PushData<BasketBallGame, BasketBallEvent>) => {

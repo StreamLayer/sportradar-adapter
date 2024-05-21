@@ -2,14 +2,6 @@ import { EventType } from "./event-type";
 import { BaseBallTeam } from "../../../interfaces/baseball-team";
 import { Player } from "../../../interfaces/player";
 
-// export interface Attribution {
-//   name: string
-//   market: string
-//   reference: string
-//   id: string
-//   sr_id: string
-// }
-
 export interface Period {
   id: string
   number: number
@@ -119,7 +111,7 @@ export interface Runner {
 export interface Event {
   id: string
   type: EventType
-  inning: number
+  inning: number // Period
   inning_half: string
   sequence_number: number
   sequence: number
@@ -135,4 +127,30 @@ export interface Event {
   pitcher: Pitcher
   hitter: Hitter
   runners: Runner[]
+  sport: string
+  datasource: string
+  scope: string
+  scopeId: string
+  timestamp: number
+  attribution?: any
+  options: {
+    [key: string]: any
+    "baseball.inningNumber": number
+    "baseball.inningHalf": string
+    "baseball.player.batter": string
+    "baseball.player.pitcher": string
+    "baseball.team.batter": string
+    "baseball.team.pitcher": string
+    "baseball.score.home": number
+    "baseball.score.away": number
+    "baseball.game.state.strikes": number
+    "baseball.game.state.balls": number
+    "baseball.game.state.outs": number
+    "baseball.game.state.pitches": number
+    "baseball.score.differential": number
+    "baseball.atbat.outcomes": any
+    "baseball.pitch.outcomes": any[]
+    "baseball.pitch.speed": number
+    "baseball.pitch.type": string
+  };
 }
