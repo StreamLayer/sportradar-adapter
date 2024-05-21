@@ -1,7 +1,8 @@
-import { PushData } from "../models/sportradar/basketball/push-data";
+import { PushData } from "../interfaces/push-data";
 import { Event, Statistics } from "../models/sportradar/basketball/event";
+import { Game } from "../models/sportradar/basketball/game";
 import { BasketballEvents } from "../models/triggers/basketball/basketball-events";
-import { GameStatus } from "../models/sportradar/basketball/game-status";
+import { GameStatus } from "../interfaces/game-status";
 import { EventType } from "../models/sportradar/basketball/event-type";
 import { GameLevel } from "../models/triggers/basketball/game-level";
 import { AdapterEvent } from "../models/triggers/adapter-event";
@@ -9,7 +10,7 @@ import { ShotType } from "../models/sportradar/basketball/shot-type";
 import { StatType } from "../models/sportradar/basketball/stat-type";
 import _ = require("lodash");
 import { Qualifier } from "../models/sportradar/basketball/qualifier";
-import { Team } from "../models/sportradar/basketball/team";
+import { BasketBallTeam } from "../interfaces/basketball-team";
 
 export class BasketballService {
 
@@ -20,7 +21,7 @@ export class BasketballService {
     constructor() {
     }
 
-    createEvents(data: PushData): AdapterEvent[] {
+    createEvents(data: PushData<Game, Event>): AdapterEvent[] {
 
         if ( data.heartbeat ) {
             return []
@@ -48,7 +49,7 @@ export class BasketballService {
         return [ event ]
     }
 
-    private getDefaultEvent(data: PushData) : AdapterEvent {
+    private getDefaultEvent(data: PushData<Game, Event>) : AdapterEvent {
         const { game, event } = data.payload
         const dt = new Date(event.wall_clock)
 
@@ -75,7 +76,7 @@ export class BasketballService {
         return defaultEvent
     }
 
-    private getGameLevelOptions(data: PushData): Record<string, string>[] {
+    private getGameLevelOptions(data: PushData<Game, Event>): Record<string, string>[] {
         const { game, event } = data.payload
 
         const extraOptions = {}
@@ -110,7 +111,7 @@ export class BasketballService {
         }
     }
 
-    private getTeamOrPlayerDunkOptions(data: PushData) : Record<string, string>[] {
+    private getTeamOrPlayerDunkOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         const dunks = _.filter(event.statistics ?? [],
@@ -140,7 +141,7 @@ export class BasketballService {
     /**
      * @description only successful three-point field goal events (made) which change the score
      */
-    private getTeamOrPlayer3FGScoreOptions(data: PushData) : Record<string, string>[] {
+    private getTeamOrPlayer3FGScoreOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.ThreePointMade) {
@@ -171,7 +172,7 @@ export class BasketballService {
     /**
      * @description any three-point field goal event regardless of the result (made or missed)
      */
-    private getTeamOrPlayer3FGOptions(data: PushData) : Record<string, string>[] {
+    private getTeamOrPlayer3FGOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.ThreePointMade
@@ -201,7 +202,7 @@ export class BasketballService {
     /**
      * @description successful field goal events (made) which result in a change of the score
      */
-    private getTeamOrPlayerScoresPointsOptions(data: PushData) : Record<string, string>[] {
+    private getTeamOrPlayerScoresPointsOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { game, event } = data.payload
         const result = []
 
@@ -262,7 +263,7 @@ export class BasketballService {
      *
      *              TODO verify logic
      */
-    private getTeamOrPlayerShootingFoulOptions(data: PushData) : Record<string, string>[] {
+    private getTeamOrPlayerShootingFoulOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.ShootingFoul) {
@@ -287,7 +288,7 @@ export class BasketballService {
         return result
     }
 
-    private getPlayer1FTMadeOptions(data: PushData) : Record<string, string>[] {
+    private getPlayer1FTMadeOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.FreeThrowMade && event.qualifiers?.includes(Qualifier.OneFreeThrow)) {
@@ -308,7 +309,7 @@ export class BasketballService {
         return result
     }
 
-    private getTeamOrPlayer2FTMadeOptions(data: PushData) : Record<string, string>[] {
+    private getTeamOrPlayer2FTMadeOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.FreeThrowMade && event.qualifiers.includes(Qualifier.OneFreeThrow)) {
@@ -333,11 +334,11 @@ export class BasketballService {
         return result
     }
 
-    private getTeamTimeoutOptions(data: PushData) : Record<string, string>[] {
+    private getTeamTimeoutOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { event } = data.payload
         const result = []
         if (event.event_type == EventType.TeamTimeout) {
-            const team = event.attribution as Team
+            const team = event.attribution as BasketBallTeam
             if (team) {
                 const extraOptions = {
                     [BasketballEvents.TeamTimeout]: team.id,
@@ -349,7 +350,7 @@ export class BasketballService {
         return result
     }
 
-    private getTeamWinOrLossOptions(data: PushData) : Record<string, string>[] {
+    private getTeamWinOrLossOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { game, event } = data.payload
         const result = []
 
@@ -386,7 +387,7 @@ export class BasketballService {
         return result
     }
 
-    getTeamFirstBasketOptions(data: PushData) : Record<string, string>[] {
+    getTeamFirstBasketOptions(data: PushData<Game, Event>) : Record<string, string>[] {
         const { game } = data.payload
         const result = []
 
