@@ -50,12 +50,12 @@ const services = {
 }
 
 // dump stream while learning
-// const date = new Date()
-// const timestamp = date.toISOString().replace(/:/g, "-");
-// const filename = `stream_baseball_${timestamp}.txt`;
-// const eventsFilename = `events_baseball_${timestamp}.txt`;
-// const filePath = path.join(__dirname, `../dumps/${filename}`);
-// const eventsFilePath = path.join(__dirname, `../dumps/${eventsFilename}`);
+const date = new Date()
+const timestamp = date.toISOString().replace(/:/g, "-");
+const filename = `stream_baseball_${timestamp}.txt`;
+const eventsFilename = `events_baseball_${timestamp}.txt`;
+const filePath = path.join(__dirname, `../dumps/${filename}`);
+const eventsFilePath = path.join(__dirname, `../dumps/${eventsFilename}`);
 
 streams.basketball
     .on("data", (data: PushData<BasketBallGame, BasketBallEvent>) => {
@@ -75,10 +75,10 @@ streams.basketball
 streams.baseball
     .on("data", (data: PushData<BaseBallGame, BaseBallEvent>) => {
         log.debug(data, "baseball raw data received")
-        //fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
+        fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.baseball.createEvents(data)
-            //fs.appendFileSync(eventsFilePath, JSON.stringify(events) + '\n');
+            fs.appendFileSync(eventsFilePath, JSON.stringify(events) + '\n');
             log.debug({ events }, 'standard events generated')
             transferQueue.push(events)
         }
