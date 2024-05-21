@@ -10,10 +10,14 @@ services:
       dockerfile: Dockerfile
     entrypoint: npm run start
     environment:
-      PROVIDER_API_KEY: "${PROVIDER_API_KEY}"
-      PROVIDER_API_URL: "${PROVIDER_API_URL}"
+      PROVIDER_BASKETBALL_API_KEY: "${PROVIDER_BASKETBALL_API_KEY}"
+      PROVIDER_BASKETBALL_API_URL: "${PROVIDER_BASKETBALL_API_URL}"
+      PROVIDER_BASEBALL_API_KEY: "${PROVIDER_BASEBALL_API_KEY}"
+      PROVIDER_BASEBALL_API_URL: "${PROVIDER_BASEBALL_API_URL}"
       TRIGGER_API_URL: "${TRIGGER_API_URL}"
       TRIGGER_ACCESS_TOKEN: "${TRIGGER_ACCESS_TOKEN}"
       TRIGGER_SECRET: "${TRIGGER_SECRET}"
     networks:
       - app
+    volumes:
+      - ./dumps:/opt/dumps

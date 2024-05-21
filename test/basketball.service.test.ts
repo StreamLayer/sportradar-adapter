@@ -13,9 +13,7 @@ describe(`BasketballService`, function() {
 
         const service = new BasketballService()
         const queue = async.queue((data, cb) => {
-            console.log(JSON.stringify(data, null, 4))
             const event = service.createEvents(data as PushData)
-            console.log(JSON.stringify(event, null, 4))
             setTimeout(() => {
                 cb()
             }, 1000)
