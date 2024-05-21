@@ -1,8 +1,6 @@
-import { Team } from "./team"
-import { Player } from "./player"
-import { ShotType } from "./shot-type";
-import { StatType } from "./stat-type";
 import { EventType } from "./event-type";
+import { BaseBallTeam } from "../../../interfaces/baseball-team";
+import { Player } from "../../../interfaces/player";
 
 // export interface Attribution {
 //   name: string
@@ -20,17 +18,17 @@ export interface Period {
 }
 
 export type EventPlayer = Pick<Player, "full_name" | "jersey_number" | "reference" | "id" | "sr_id">
-export type EventTeam = Team
+export type EventTeam = BaseBallTeam
 
 export interface Court {
-  home: Team
-  away: Team
+  home: BaseBallTeam
+  away: BaseBallTeam
 }
 
 export interface Location {
   coord_x: number
   coord_y: number
-  action_area: "underbasket" | string
+  action_area: string
 }
 
 export interface Possession {
@@ -51,15 +49,14 @@ export interface Possession {
 }
 
 export interface Statistics {
-  type: StatType
+  type: string
   made: boolean
-  shot_type: ShotType
   shot_type_desc: "driving" | string
   shot_distance: number
   // TODO find out what does these points refer to?
   //  Is it points for event or a total sum over the game?
   points: number
-  team: Team
+  team: BaseBallTeam
   player: Pick<Player, "full_name" | "jersey_number" | "reference" | "id">
 }
 

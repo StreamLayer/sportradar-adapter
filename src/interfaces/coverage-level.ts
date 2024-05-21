@@ -7,5 +7,6 @@ export enum CoverageLevel {
     Full = "full",
     // We provide scores, time remaining, and team leaders (assists, points, and rebounds), in a timely manner, as the game progresses.
     // We provide team- and player-level data for the game within 30 minutes of the official results being posted.
+    ExtendedBoxscore = "extended_boxscore",
     Boxscore = "boxscore"
 }

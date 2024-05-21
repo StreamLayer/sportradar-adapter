@@ -1,15 +1,14 @@
-import { Game } from "./game";
-import { Event } from "./event";
 import { Metadata } from "./metadata";
 
-export interface Payload {
+
+export interface Payload<Game, Event> {
     game: Game,
     event: Event
 }
 
-export interface PushData {
+export interface PushData<Game, Event> {
     heartbeat: any,
-    payload: Payload,
+    payload: Payload<Game, Event>,
     locale: string,
     metadata: Metadata
 }

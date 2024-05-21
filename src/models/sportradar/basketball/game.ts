@@ -1,4 +1,4 @@
-import { Team } from "./team"
+import { BasketBallTeam } from "../../../interfaces/basketball-team"
 
 export interface Game {
   id: string
@@ -6,6 +6,6 @@ export interface Game {
   coverage: string
   reference: string
   scheduled: string
-  home: Team,
-  away: Team
+  home: BasketBallTeam,
+  away: BasketBallTeam
 }

@@ -1,14 +1,17 @@
 import pino, { Logger, LoggerOptions } from "pino"
 
-import { PushData as BasketballPushData } from "./models/sportradar/basketball/push-data";
-import { PushData as BaseballPushData } from "./models/sportradar/baseball/push-data";
+import { PushData } from "./interfaces/push-data";
+import { Game as BasketBallGame } from "./models/sportradar/basketball/game";
+import { Event as BasketBallEvent } from "./models/sportradar/basketball/event";
+import { Game as BaseBallGame } from "./models/sportradar/baseball/game";
+import { Event as BaseBallEvent } from "./models/sportradar/baseball/event";
 
 import { Subscriber } from "./stream/subscriber"
 import { BasketballService } from "./services/basketball.service";
+import { BaseballService } from "./services/baseball.service";
 import { TransferQueue } from "./services/transfer.queue";
 import * as fs from "fs";
 import * as path from "path";
-import { BaseballService } from "./services/baseball.service";
 
 require('dotenv').config()
 
@@ -46,9 +49,8 @@ const services = {
     baseball: new BaseballService()
 }
 
-const date = new Date()
-
 // dump stream while learning
+// const date = new Date()
 // const timestamp = date.toISOString().replace(/:/g, "-");
 // const filename = `stream_baseball_${timestamp}.txt`;
 // const eventsFilename = `events_baseball_${timestamp}.txt`;
@@ -56,8 +58,8 @@ const date = new Date()
 // const eventsFilePath = path.join(__dirname, `../dumps/${eventsFilename}`);
 
 streams.basketball
-    .on("data", (data: BasketballPushData) => {
-        log.debug(data, "raw data received")
+    .on("data", (data: PushData<BasketBallGame, BasketBallEvent>) => {
+        log.debug(data, "basketball raw data received")
         // fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.basketball.createEvents(data)
@@ -71,8 +73,8 @@ streams.basketball
     .start()
 
 streams.baseball
-    .on("data", (data: BaseballPushData) => {
-        log.debug(data, "raw data received")
+    .on("data", (data: PushData<BaseBallGame, BaseBallEvent>) => {
+        log.debug(data, "baseball raw data received")
         //fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.baseball.createEvents(data)

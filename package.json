@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha --timeout 10000 -r ts-node/register 'test/**/*.ts'",
-    "start": "ts-node src/index"
+    "start": "ts-node src/index",
+    "start:docker": "docker-compose up --no-deps --build"
   },
   "keywords": [],
   "author": "",

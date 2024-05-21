@@ -1,8 +1,10 @@
 import { EventType } from "../models/sportradar/baseball/event-type";
 import { atbatOutcomes } from "../models/sportradar/baseball/atbatOutcomes";
-import { PushData } from "../models/sportradar/baseball/push-data";
 import { AdapterEvent } from "../models/triggers/adapter-event";
 import { PitchOutcomeState } from "../models/sportradar/baseball/pitchOutcomes";
+import { PushData } from "../interfaces/push-data";
+import { Game } from "../models/sportradar/baseball/game";
+import { Event } from "../models/sportradar/baseball/event";
 
 export class BaseballService {
 
@@ -13,7 +15,7 @@ export class BaseballService {
     constructor() {
     }
 
-    createEvents(data: PushData): AdapterEvent[] {
+    createEvents(data: PushData<Game, Event>): AdapterEvent[] {
         if (data.heartbeat) {
             return []
         }
