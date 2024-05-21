@@ -8,7 +8,6 @@ describe(`JsonParser`, function() {
     it(`should parse stream of push events`, async () => {
 
         const queue = async.queue((event, cb) => {
-            console.log(JSON.stringify(event, null, 4))
             setTimeout(() => {
                 cb()
             }, 1000)

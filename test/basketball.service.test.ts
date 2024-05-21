@@ -3,7 +3,9 @@ import * as fs from "fs"
 import Parser = require("jsonparse")
 import async from "async"
 import { BasketballService } from "../src/services/basketball.service";
-import { PushData } from "../src/models/sportradar/basketball/push-data";
+import { PushData } from "../src/interfaces/push-data";
+import { Game } from "../src/models/sportradar/basketball/game";
+import { Event } from "../src/models/sportradar/basketball/event";
 
 describe(`BasketballService`, function() {
 
@@ -13,9 +15,7 @@ describe(`BasketballService`, function() {
 
         const service = new BasketballService()
         const queue = async.queue((data, cb) => {
-            console.log(JSON.stringify(data, null, 4))
-            const event = service.createEvents(data as PushData)
-            console.log(JSON.stringify(event, null, 4))
+            const event = service.createEvents(data as PushData<Game, Event>)
             setTimeout(() => {
                 cb()
             }, 1000)

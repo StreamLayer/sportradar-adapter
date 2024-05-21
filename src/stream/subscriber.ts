@@ -49,7 +49,6 @@ export class Subscriber extends EventEmitter {
                 return status >= 200 && status < 303;
             },
         })
-
         return res.headers.location;
     }
 
