@@ -5,7 +5,7 @@ import { PitchOutcomeState } from "../models/sportradar/baseball/pitchOutcomes"
 import { PushData } from "../interfaces/push-data"
 import { Game } from "../models/sportradar/baseball/game"
 import { Event } from "../models/sportradar/baseball/event"
-import _ from "lodash"
+import _ = require("lodash");
 import { GameLevel } from "../models/triggers/baseball/game-level"
 import { GameStatus } from "../interfaces/game-status"
 import { BaseballEvents } from "../models/triggers/baseball/baseball-events"

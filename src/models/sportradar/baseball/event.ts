@@ -24,19 +24,8 @@ export interface Location {
 }
 
 export interface Possession {
-  /**
-   * @description player's name
-   */
   name: string
-
-  /**
-   * @description player team's name
-   */
   market: string
-
-  /**
-   * @description player's id
-   */
   id: string
 }
 
@@ -45,8 +34,6 @@ export interface Statistics {
   made: boolean
   shot_type_desc: "driving" | string
   shot_distance: number
-  // TODO find out what does these points refer to?
-  //  Is it points for event or a total sum over the game?
   points: number
   team: BaseBallTeam
   player: Pick<Player, "full_name" | "jersey_number" | "reference" | "id">
@@ -132,7 +119,7 @@ export interface Event {
   scope: string
   scopeId: string
   timestamp: number
-  attribution?: any
+  attribution?: BaseBallTeam
   options: {
     [key: string]: any
     "baseball.inningNumber": number
