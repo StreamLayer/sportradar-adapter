@@ -24,6 +24,9 @@ export enum BaseballEvents {
     PitchOutcomes = 'baseball.pitch.outcomes', // pitch outcomes
     PitchSpeed = 'baseball.pitch.speed', // pitch speed
     PitchType = 'baseball.pitch.type', // pitch type
+    PitchZone = 'baseball.pitch.zone', // pitch zone
+    PitchX = 'baseball.pitch.x', // pitch X coordinate
+    PitchY = 'baseball.pitch.y', // pitch Y coordinate
     ScoreHome = 'baseball.score.home', // score for home team
     ScoreAway = 'baseball.score.away', // score for away team
     TeamTimeout = 'baseball.team.timeout',

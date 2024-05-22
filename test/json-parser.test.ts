@@ -3,19 +3,19 @@ import * as fs from "fs"
 import Parser = require("jsonparse")
 import async from "async"
 
-describe(`JsonParser`, function() {
+describe(`JsonParser`, function () {
     this.timeout(3_600_000)
     it(`should parse stream of push events`, async () => {
 
         const queue = async.queue((event, cb) => {
             setTimeout(() => {
                 cb()
-            }, 1000)
+            }, 1)
         }, 1)
 
         const parser = new Parser()
-        parser.onValue = function(event) {
-            if ( this.key == null ) {
+        parser.onValue = function (event) {
+            if (this.key == null) {
                 queue.push(event)
             }
         }
