@@ -1,6 +1,7 @@
 import { EventType } from "./event-type";
 import { BaseBallTeam } from "../../../interfaces/baseball-team";
 import { Player } from "../../../interfaces/player";
+import { PitchOutcome } from "./pitchOutcomes";
 
 export interface Period {
   id: string
@@ -73,6 +74,9 @@ export interface Pitcher {
   jersey_number: string
   pitch_speed: number
   pitch_type: string
+  pitch_zone: number
+  pitch_x: number
+  pitch_y: number
 }
 
 export interface Hitter {
@@ -87,7 +91,7 @@ export interface Runner {
   id: string
   starting_base: number
   ending_base: number
-  outcome_id: string
+  outcome_id: PitchOutcome
   out: boolean
   last_name: string
   first_name: string
@@ -104,7 +108,7 @@ export interface Event {
   sequence: number
   hitter_id: string
   atbat_id: string
-  outcome_id: string
+  outcome_id: PitchOutcome
   status: string
   created_at: string
   updated_at: string
@@ -139,5 +143,8 @@ export interface Event {
     "baseball.pitch.outcomes": any[]
     "baseball.pitch.speed": number
     "baseball.pitch.type": string
+    "baseball.pitch.zone": number
+    "baseball.pitch.x": number
+    "baseball.pitch.y": number
   };
 }

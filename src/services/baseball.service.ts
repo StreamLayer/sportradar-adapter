@@ -1,11 +1,11 @@
 import { EventType } from "../models/sportradar/baseball/event-type"
-import { atbatOutcomes } from "../models/sportradar/baseball/atbatOutcomes"
+import { sportRadarAtBatOutcomes } from "../models/sportradar/baseball/atbatOutcomes"
+import { PitchOutcome } from "../models/sportradar/baseball/pitchOutcomes"
 import { AdapterEvent } from "../models/triggers/adapter-event"
-import { PitchOutcomeState } from "../models/sportradar/baseball/pitchOutcomes"
 import { PushData } from "../interfaces/push-data"
 import { Game } from "../models/sportradar/baseball/game"
 import { Event } from "../models/sportradar/baseball/event"
-import _ = require("lodash");
+import _ = require("lodash")
 import { GameLevel } from "../models/triggers/baseball/game-level"
 import { GameStatus } from "../interfaces/game-status"
 import { BaseballEvents } from "../models/triggers/baseball/baseball-events"
@@ -62,7 +62,7 @@ export class BaseballService {
             [BaseballEvents.GameOuts]: event.count?.outs.toString(),
             [BaseballEvents.GamePitches]: event.count?.pitch_count.toString(),
             [BaseballEvents.ScoreDifferential]: Math.abs(game.home.runs - game.away.runs).toString(),
-            [BaseballEvents.AtBatOutcomes]: atbatOutcomes[event.type]?.join(',') || null,
+            [BaseballEvents.AtBatOutcomes]: sportRadarAtBatOutcomes[event.outcome_id]?.join(',') || null,
         }
 
         const defaultEvent: AdapterEvent = {
@@ -101,21 +101,24 @@ export class BaseballService {
         if (event.type === EventType.Pitch) {
             const options: Record<string, string> = {
                 [BaseballEvents.PitchSpeed]: event?.pitcher?.pitch_speed?.toString() || '',
-                [BaseballEvents.PitchType]: event?.pitcher?.pitch_type || ''
+                [BaseballEvents.PitchType]: event?.pitcher?.pitch_type || '',
+                [BaseballEvents.PitchZone]: event?.pitcher?.pitch_zone?.toString() || '',
+                [BaseballEvents.PitchX]: event?.pitcher?.pitch_x?.toString() || '',
+                [BaseballEvents.PitchY]: event?.pitcher?.pitch_y?.toString() || ''
             }
 
             if (event?.pitcher?.pitch_speed) {
                 if (event?.pitcher?.pitch_speed > 90) {
-                    pitchOutcomes.push(PitchOutcomeState.GT90)
+                    pitchOutcomes.push(PitchOutcome.GT90)
                 }
 
                 if (event?.pitcher?.pitch_speed < 80) {
-                    pitchOutcomes.push(PitchOutcomeState.LT80)
+                    pitchOutcomes.push(PitchOutcome.LT80)
                 }
             }
 
-            if (atbatOutcomes[event.type]) {
-                pitchOutcomes = [...pitchOutcomes, ...atbatOutcomes[event.type]]
+            if (sportRadarAtBatOutcomes[event.outcome_id]) {
+                pitchOutcomes = [...pitchOutcomes, ...sportRadarAtBatOutcomes[event.outcome_id]]
             }
 
             options[BaseballEvents.PitchOutcomes] = pitchOutcomes.join(',')
