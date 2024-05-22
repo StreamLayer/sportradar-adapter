@@ -75,7 +75,7 @@ streams.basketball
 streams.baseball
     .on("data", (data: PushData<BaseBallGame, BaseBallEvent>) => {
         log.debug(data, "baseball raw data received")
-        fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
+        // fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.baseball.createEvents(data)
             fs.appendFileSync(eventsFilePath, JSON.stringify(events) + '\n');

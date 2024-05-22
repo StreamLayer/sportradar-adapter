@@ -7,7 +7,7 @@ import { PushData } from "../src/interfaces/push-data";
 import { Game } from "../src/models/sportradar/basketball/game";
 import { Event } from "../src/models/sportradar/basketball/event";
 
-describe(`BasketballService`, function() {
+describe(`BasketballService`, function () {
 
     this.timeout(3_600_000)
 
@@ -18,12 +18,12 @@ describe(`BasketballService`, function() {
             const event = service.createEvents(data as PushData<Game, Event>)
             setTimeout(() => {
                 cb()
-            }, 1000)
+            }, 10)
         }, 1)
 
         const parser = new Parser()
-        parser.onValue = function(event) {
-            if ( this.key == null ) {
+        parser.onValue = function (event) {
+            if (this.key == null) {
                 queue.push(event)
             }
         }
