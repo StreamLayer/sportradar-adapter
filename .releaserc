@@ -1,0 +1,23 @@
+{
+  "branches": [
+    {
+      "name": "master"
+    }
+  ],
+  "verifyConditions": [
+    "@semantic-release/changelog",
+    "@semantic-release/git",
+    "@semantic-release/github"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/github",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "docker build -t gcr.io/peak-orbit-214114/sl-sportradar-adapter:${nextRelease.version} . && docker push gcr.io/peak-orbit-214114/sl-sportradar-adapter:${nextRelease.version}"
+      }
+    ]
+  ]
+}
