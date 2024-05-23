@@ -1,10 +1,8 @@
 import pino, { Logger, LoggerOptions } from "pino"
 
-import { PushData } from "./interfaces/push-data";
+import { MlbData, PushData } from "./interfaces/push-data";
 import { Game as BasketBallGame } from "./models/sportradar/basketball/game";
 import { Event as BasketBallEvent } from "./models/sportradar/basketball/event";
-import { Game as BaseBallGame } from "./models/sportradar/baseball/game";
-import { Event as BaseBallEvent } from "./models/sportradar/baseball/event";
 
 import { Subscriber } from "./stream/subscriber"
 import { BasketballService } from "./services/basketball.service";
@@ -73,12 +71,12 @@ streams.basketball
     .start()
 
 streams.baseball
-    .on("data", (data: PushData<BaseBallGame, BaseBallEvent>) => {
+    .on("data", (data: MlbData) => {
         log.debug(data, "baseball raw data received")
         // fs.appendFileSync(filePath, JSON.stringify(data) + '\n');
         if (!data.heartbeat) {
             const events = services.baseball.createEvents(data)
-            fs.appendFileSync(eventsFilePath, JSON.stringify(events) + '\n');
+            // fs.appendFileSync(eventsFilePath, JSON.stringify(events) + '\n');
             log.debug({ events }, 'standard events generated')
             transferQueue.push(events)
         }
