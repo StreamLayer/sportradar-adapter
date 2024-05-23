@@ -284,10 +284,7 @@ export enum MlbOutcomeTypes {
     TriplePlay = 'triple_play' // The last event logged was a triple play
 }
 
-export interface MlbData {
+export interface MlbPayload {
     game: MlbGame,
-    event: MlbEvent,
-    locale: string,
-    metadata: MlbMetadata,
-    heartbeat?: any
+    event: MlbEvent
 }

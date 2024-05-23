@@ -1,7 +1,8 @@
 import { AdapterEvent } from '../models/triggers/adapter-event'
 import { GameState, PitchOutcomeState, InningHalf, PitchSpeedState, PitchTypeState, AtBatOutcomeState } from '../interfaces/baseball-interfaces'
-import { MlbData, MlbPitchOutcomes, MlbEvent, MlbGameStatus, MlbEventType } from '../models/sportradar/baseball/mlb-interfaces'
+import { MlbPayload, MlbPitchOutcomes, MlbEvent, MlbGameStatus, MlbEventType } from '../models/sportradar/baseball/mlb-interfaces'
 import { BaseballEvents } from '../models/triggers/baseball/baseball-events'
+import { MlbData } from '../interfaces/push-data'
 import _ = require('lodash')
 
 export class BaseballService {
@@ -11,21 +12,23 @@ export class BaseballService {
 
     constructor() { }
 
-    createEvents(data: MlbData): AdapterEvent[] {
-        if (data.heartbeat) {
+    createEvents(mlbData: MlbData): AdapterEvent[] {
+        if (mlbData.heartbeat) {
             return []
         }
 
+        const { payload } = mlbData
+
         const options: Record<string, string | number>[] = []
 
-        options.push(...this.getGameLevelOptions(data))
-        options.push(...this.getPitchOptions(data.event))
-        options.push(...this.getTeamOrPlayerBatterOptions(data))
-        options.push(...this.getTeamOrPlayerPitcherOptions(data))
-        options.push(...this.getTeamOrPlayerScoreOptions(data))
-        options.push(...this.getTeamWinOrLossOptions(data))
+        options.push(...this.getGameLevelOptions(payload))
+        options.push(...this.getPitchOptions(payload.event))
+        options.push(...this.getTeamOrPlayerBatterOptions(payload))
+        options.push(...this.getTeamOrPlayerPitcherOptions(payload))
+        options.push(...this.getTeamOrPlayerScoreOptions(payload))
+        options.push(...this.getTeamWinOrLossOptions(payload))
 
-        const event = this.getDefaultEvent(data)
+        const event = this.getDefaultEvent(payload)
         for (const extras of options) {
             if (extras) {
                 _.merge(event.options, extras)
@@ -35,15 +38,15 @@ export class BaseballService {
         return [event]
     }
 
-    private getDefaultEvent(data: MlbData): AdapterEvent {
-        const { game, event } = data
+    private getDefaultEvent(payload: MlbPayload): AdapterEvent {
+        const { game, event } = payload
         const dt = new Date(event.created_at)
 
         const options = {
             [BaseballEvents.InningNumber]: event.inning.toString(),
             [BaseballEvents.InningHalf]: this.mapInningHalf(event.inning_half),
-            [BaseballEvents.PlayerBatter]: event.hitter_id,
-            [BaseballEvents.PlayerPitcher]: event.pitcher.id,
+            [BaseballEvents.PlayerBatter]: event?.hitter_id,
+            [BaseballEvents.PlayerPitcher]: event?.pitcher?.id,
             [BaseballEvents.TeamBatter]: event.inning_half === 'T' ? game.away.id : game.home.id,
             [BaseballEvents.TeamPitcher]: event.inning_half === 'T' ? game.home.id : game.away.id,
             [BaseballEvents.ScoreHome]: game.home.runs.toString(),
@@ -69,8 +72,8 @@ export class BaseballService {
         return defaultEvent
     }
 
-    private getGameLevelOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data
+    private getGameLevelOptions(payload: MlbPayload): Record<string, string>[] {
+        const { game, event } = payload
         const extraOptions: Record<string, string> = {}
 
         if (game.status === MlbGameStatus.InProgress) {
@@ -94,9 +97,9 @@ export class BaseballService {
             const options: Record<string, string> = {
                 [BaseballEvents.PitchSpeed]: this.mapPitchSpeed(event),
                 [BaseballEvents.PitchType]: this.mapPitchType(event),
-                [BaseballEvents.PitchZone]: event?.pitcher?.pitch_zone.toString() || '',
-                [BaseballEvents.PitchX]: event?.pitcher?.pitch_x.toString() || '',
-                [BaseballEvents.PitchY]: event?.pitcher?.pitch_y.toString() || ''
+                [BaseballEvents.PitchZone]: event?.pitcher?.pitch_zone?.toString() || '',
+                [BaseballEvents.PitchX]: event?.pitcher?.pitch_x?.toString() || '',
+                [BaseballEvents.PitchY]: event?.pitcher?.pitch_y?.toString() || ''
             }
 
             options[BaseballEvents.PitchOutcomes] = this.mapPitchOutcomes(event)
@@ -107,8 +110,8 @@ export class BaseballService {
         return result
     }
 
-    private getTeamOrPlayerBatterOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data
+    private getTeamOrPlayerBatterOptions(payload: MlbPayload): Record<string, string>[] {
+        const { game, event } = payload
         const result = []
 
         if (event.type === MlbEventType.AtBat) {
@@ -121,8 +124,8 @@ export class BaseballService {
         return result
     }
 
-    private getTeamOrPlayerPitcherOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data
+    private getTeamOrPlayerPitcherOptions(payload: MlbPayload): Record<string, string>[] {
+        const { game, event } = payload
         const result = []
 
         if (event.type === MlbEventType.Pitch) {
@@ -135,8 +138,8 @@ export class BaseballService {
         return result
     }
 
-    private getTeamOrPlayerScoreOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data
+    private getTeamOrPlayerScoreOptions(payload: MlbPayload): Record<string, string>[] {
+        const { game, event } = payload
         const result = []
 
         if (event.type === MlbEventType.AtBat || event.type === MlbEventType.Pitch) {
@@ -149,8 +152,8 @@ export class BaseballService {
         return result
     }
 
-    private getTeamWinOrLossOptions(data: MlbData): Record<string, string>[] {
-        const { game } = data
+    private getTeamWinOrLossOptions(payload: MlbPayload): Record<string, string>[] {
+        const { game } = payload
         const result = []
 
         if (game.status === MlbGameStatus.Complete) {
