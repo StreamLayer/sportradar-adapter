@@ -1,0 +1,39 @@
+version: v1.0
+name: streamlayer/nvenue-adapter
+agent:
+  machine:
+    type: e2-standard-2
+    os_image: ubuntu2004
+
+global_job_config:
+  secrets:
+    - name: semantic-read
+    - name: gcr-service-account
+
+  prologue:
+    commands:
+      - checkout
+      - npm install
+      - "cat ~/io.gcr.peak-orbit-214114.json | docker login -u _json_key --password-stdin https://gcr.io"
+
+blocks:
+  - name: Test
+    skip:
+      when: "branch = 'master'"
+    task:
+      jobs:
+        - name: Test
+          commands:
+            - echo "Running tests"
+            # - npm test
+
+  - name: Semantic Release and Docker Build
+    skip:
+      when: "branch != 'master'"
+    task:
+      secrets:
+        - name: semantic-release
+      jobs:
+      - name: Run Semantic Release and Docker Build
+        commands:
+          - npx semantic-release
