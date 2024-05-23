@@ -1,3 +1,4 @@
+import { MlbMetadata, MlbPayload } from "../models/sportradar/baseball/mlb-interfaces";
 import { Metadata } from "./metadata";
 
 
@@ -14,3 +15,9 @@ export interface PushData<Game, Event> {
 }
 
 
+export interface MlbData {
+    heartbeat: any,
+    payload: MlbPayload,
+    locale: string,
+    metadata: MlbMetadata
+}
