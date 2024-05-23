@@ -1,43 +1,43 @@
-import { AdapterEvent } from "../models/triggers/adapter-event";
-import { GameState, PitchOutcomeState, InningHalf, PitchSpeedState, PitchTypeState, AtBatOutcomeState } from "../interfaces/baseball-interfaces";
-import { MlbData, MlbPitchOutcomes, MlbEvent, MlbGameStatus, MlbEventType } from "../models/sportradar/baseball/mlb-interfaces";
-import { BaseballEvents } from "../models/triggers/baseball/baseball-events";
-import _ = require("lodash");
+import { AdapterEvent } from '../models/triggers/adapter-event'
+import { GameState, PitchOutcomeState, InningHalf, PitchSpeedState, PitchTypeState, AtBatOutcomeState } from '../interfaces/baseball-interfaces'
+import { MlbData, MlbPitchOutcomes, MlbEvent, MlbGameStatus, MlbEventType } from '../models/sportradar/baseball/mlb-interfaces'
+import { BaseballEvents } from '../models/triggers/baseball/baseball-events'
+import _ = require('lodash')
 
 export class BaseballService {
-    private datasource: string = "sportradar";
-    private sport: string = "baseball";
-    private scope: string = "game";
+    private datasource: string = 'sportradar'
+    private sport: string = 'baseball'
+    private scope: string = 'game'
 
     constructor() { }
 
     createEvents(data: MlbData): AdapterEvent[] {
         if (data.heartbeat) {
-            return [];
+            return []
         }
 
-        const options: Record<string, string | number>[] = [];
+        const options: Record<string, string | number>[] = []
 
-        options.push(...this.getGameLevelOptions(data));
-        options.push(...this.getPitchOptions(data.event));
-        options.push(...this.getTeamOrPlayerBatterOptions(data));
-        options.push(...this.getTeamOrPlayerPitcherOptions(data));
-        options.push(...this.getTeamOrPlayerScoreOptions(data));
-        options.push(...this.getTeamWinOrLossOptions(data));
+        options.push(...this.getGameLevelOptions(data))
+        options.push(...this.getPitchOptions(data.event))
+        options.push(...this.getTeamOrPlayerBatterOptions(data))
+        options.push(...this.getTeamOrPlayerPitcherOptions(data))
+        options.push(...this.getTeamOrPlayerScoreOptions(data))
+        options.push(...this.getTeamWinOrLossOptions(data))
 
-        const event = this.getDefaultEvent(data);
+        const event = this.getDefaultEvent(data)
         for (const extras of options) {
             if (extras) {
-                _.merge(event.options, extras);
+                _.merge(event.options, extras)
             }
         }
 
-        return [event];
+        return [event]
     }
 
     private getDefaultEvent(data: MlbData): AdapterEvent {
-        const { game, event } = data;
-        const dt = new Date(event.created_at);
+        const { game, event } = data
+        const dt = new Date(event.created_at)
 
         const options = {
             [BaseballEvents.InningNumber]: event.inning.toString(),
@@ -53,8 +53,8 @@ export class BaseballService {
             [BaseballEvents.GameOuts]: event.count?.outs?.toString() ?? '',
             [BaseballEvents.GamePitches]: event.count?.pitch_count?.toString() ?? '',
             [BaseballEvents.ScoreDifferential]: Math.abs(game.home.runs - game.away.runs).toString(),
-            [BaseballEvents.AtBatOutcomes]: this.mapAtBatOutcome(event),
-        };
+            [BaseballEvents.AtBatOutcomes]: this.mapAtBatOutcome(event)
+        }
 
         const defaultEvent: AdapterEvent = {
             id: event.id,
@@ -64,29 +64,31 @@ export class BaseballService {
             scopeId: game.id,
             timestamp: dt.getTime(),
             options
-        };
+        }
 
-        return defaultEvent;
+        return defaultEvent
     }
 
     private getGameLevelOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data;
-        const extraOptions: Record<string, string> = {};
+        const { game, event } = data
+        const extraOptions: Record<string, string> = {}
 
-        if (game.status === MlbGameStatus.InProgress
-            && event.inning === 1
-            && event.inning_half === 'T') {
-            extraOptions[BaseballEvents.GameLevel] = GameState.GameStart;
+        if (game.status === MlbGameStatus.InProgress) {
+            extraOptions[BaseballEvents.GameLevel] = (event.inning === 1 && event.inning_half === 'T')
+                ? GameState.GameStart
+                : GameState.InningStart
         } else if (game.status === MlbGameStatus.Complete) {
-            extraOptions[BaseballEvents.GameLevel] = GameState.GameEnd;
+            extraOptions[BaseballEvents.GameLevel] = GameState.GameEnd
+        } else if (game.status === MlbGameStatus.Suspended || game.status === MlbGameStatus.Postponed) {
+            extraOptions[BaseballEvents.GameLevel] = GameState.InningEnd
         }
 
-        return Object.keys(extraOptions).length > 0 ? [extraOptions] : [];
+        return Object.keys(extraOptions).length > 0 ? [extraOptions] : []
     }
 
-    private getPitchOptions(event: MlbEvent): Record<string, string>[] {
-        const result = [];
 
+    private getPitchOptions(event: MlbEvent): Record<string, string>[] {
+        const result = []
 
         if (event.type === MlbEventType.Pitch) {
             const options: Record<string, string> = {
@@ -95,103 +97,103 @@ export class BaseballService {
                 [BaseballEvents.PitchZone]: event?.pitcher?.pitch_zone.toString() || '',
                 [BaseballEvents.PitchX]: event?.pitcher?.pitch_x.toString() || '',
                 [BaseballEvents.PitchY]: event?.pitcher?.pitch_y.toString() || ''
-            };
+            }
 
             options[BaseballEvents.PitchOutcomes] = this.mapPitchOutcomes(event)
 
-            result.push(options);
+            result.push(options)
         }
 
         return result
     }
 
     private getTeamOrPlayerBatterOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data;
-        const result = [];
+        const { game, event } = data
+        const result = []
 
         if (event.type === MlbEventType.AtBat) {
-            const options: Record<string, string> = {};
-            options[BaseballEvents.PlayerBatter] = event.hitter.id;
-            options[BaseballEvents.TeamBatter] = event.inning_half === 'T' ? game.away.id : game.home.id;
-            result.push(options);
+            const options: Record<string, string> = {}
+            options[BaseballEvents.PlayerBatter] = event.hitter.id
+            options[BaseballEvents.TeamBatter] = event.inning_half === 'T' ? game.away.id : game.home.id
+            result.push(options)
         }
 
-        return result;
+        return result
     }
 
     private getTeamOrPlayerPitcherOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data;
-        const result = [];
+        const { game, event } = data
+        const result = []
 
         if (event.type === MlbEventType.Pitch) {
-            const options: Record<string, string> = {};
-            options[BaseballEvents.PlayerPitcher] = event.pitcher.id;
-            options[BaseballEvents.TeamPitcher] = event.inning_half === 'T' ? game.home.id : game.away.id;
-            result.push(options);
+            const options: Record<string, string> = {}
+            options[BaseballEvents.PlayerPitcher] = event.pitcher.id
+            options[BaseballEvents.TeamPitcher] = event.inning_half === 'T' ? game.home.id : game.away.id
+            result.push(options)
         }
 
-        return result;
+        return result
     }
 
     private getTeamOrPlayerScoreOptions(data: MlbData): Record<string, string>[] {
-        const { game, event } = data;
-        const result = [];
+        const { game, event } = data
+        const result = []
 
         if (event.type === MlbEventType.AtBat || event.type === MlbEventType.Pitch) {
-            const options: Record<string, string> = {};
-            options[BaseballEvents.ScoreHome] = game.home.runs.toString();
-            options[BaseballEvents.ScoreAway] = game.away.runs.toString();
-            result.push(options);
+            const options: Record<string, string> = {}
+            options[BaseballEvents.ScoreHome] = game.home.runs.toString()
+            options[BaseballEvents.ScoreAway] = game.away.runs.toString()
+            result.push(options)
         }
 
-        return result;
+        return result
     }
 
     private getTeamWinOrLossOptions(data: MlbData): Record<string, string>[] {
-        const { game } = data;
-        const result = [];
+        const { game } = data
+        const result = []
 
         if (game.status === MlbGameStatus.Complete) {
             const teams = [
                 { id: game.home.id, runs: game.home.runs },
                 { id: game.away.id, runs: game.away.runs }
-            ];
-            const [lost, won] = _.sortBy(teams, 'runs');
+            ]
+            const [lost, won] = _.sortBy(teams, 'runs')
 
             if (lost) {
                 const options: Record<string, string> = {
                     [BaseballEvents.TeamLoss]: lost.id,
                     [BaseballEvents.Team]: lost.id
-                };
-                result.push(options);
+                }
+                result.push(options)
             }
 
             if (won) {
                 const options: Record<string, string> = {
                     [BaseballEvents.TeamWin]: won.id,
                     [BaseballEvents.Team]: won.id
-                };
-                result.push(options);
+                }
+                result.push(options)
             }
         }
 
-        return result;
+        return result
     }
 
     private mapInningHalf(inning_half: 'T' | 'B'): string {
-        return inning_half === 'T' ? InningHalf.Top : InningHalf.Bottom;
+        return inning_half === 'T' ? InningHalf.Top : InningHalf.Bottom
     }
 
     private mapPitchOutcomes(event: MlbEvent): string {
-        let pitchOutcomes: PitchOutcomeState[] = [];
+        let pitchOutcomes: PitchOutcomeState[] = []
 
         if (event?.pitcher?.pitch_speed) {
             if (event.pitcher.pitch_speed > 90) {
-                pitchOutcomes.push(PitchOutcomeState.GT90);
+                pitchOutcomes.push(PitchOutcomeState.GT90)
             }
 
             if (event.pitcher.pitch_speed < 80) {
-                pitchOutcomes.push(PitchOutcomeState.LT80);
+                pitchOutcomes.push(PitchOutcomeState.LT80)
             }
         }
 
@@ -235,20 +237,20 @@ export class BaseballService {
                 [MlbPitchOutcomes.oLO]: PitchOutcomeState.InlpayOut,
                 [MlbPitchOutcomes.oGO]: PitchOutcomeState.InlpayOut,
                 [MlbPitchOutcomes.oFO]: PitchOutcomeState.InlpayOut,
-                [MlbPitchOutcomes.oPO]: PitchOutcomeState.InlpayOut,
-            };
+                [MlbPitchOutcomes.oPO]: PitchOutcomeState.InlpayOut
+            }
 
-            const mappedOutcome = outcomeMap[event.outcome_id];
+            const mappedOutcome = outcomeMap[event.outcome_id]
             if (mappedOutcome) {
-                pitchOutcomes.push(mappedOutcome);
+                pitchOutcomes.push(mappedOutcome)
             }
         }
 
-        return pitchOutcomes.join(',');
+        return pitchOutcomes.join(',')
     }
 
     private mapPitchSpeed(event: MlbEvent): string {
-        const speed = event?.pitcher?.pitch_speed;
+        const speed = event?.pitcher?.pitch_speed
         if (speed > 99) {
             return PitchSpeedState.GT99
         }
@@ -272,7 +274,7 @@ export class BaseballService {
 
     private mapAtBatOutcome(event: MlbEvent): AtBatOutcomeState | '' | MlbPitchOutcomes {
         if (!event.outcome_id) {
-            return '';
+            return ''
         }
 
         const outcomeMap: { [key in MlbPitchOutcomes]?: AtBatOutcomeState } = {
@@ -386,8 +388,8 @@ export class BaseballService {
             [MlbPitchOutcomes.rPABC]: AtBatOutcomeState.REACH,
             // 'Ruling Pending, At Bat Over' > out
             [MlbPitchOutcomes.rPABO]: AtBatOutcomeState.OUT
-        };
+        }
 
-        return outcomeMap[event.outcome_id] || event.outcome_id;
+        return outcomeMap[event.outcome_id] || event.outcome_id
     }
 }
